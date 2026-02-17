@@ -13,15 +13,42 @@ function isLocalhostUrl(raw: string) {
   }
 }
 
+function deriveUrlFromVercel() {
+  const raw = process.env.VERCEL_URL;
+  if (isBlank(raw)) return null;
+  const host = String(raw).trim();
+  if (!host) return null;
+  if (host.startsWith("http://") || host.startsWith("https://")) {
+    return host;
+  }
+  return `https://${host}`;
+}
+
 export function assertServerEnv() {
   if (validated) return;
   validated = true;
 
   const missing: string[] = [];
-  const requiredAlways = ["DATABASE_URL", "NEXTAUTH_URL", "AUTH_ENCRYPTION_KEY"] as const;
+  const requiredAlways = ["DATABASE_URL", "AUTH_ENCRYPTION_KEY"] as const;
   for (const key of requiredAlways) {
     if (isBlank(process.env[key])) {
       missing.push(key);
+    }
+  }
+
+  // On Vercel we can safely derive the public origin from VERCEL_URL, which avoids
+  // "hard 500" failures when NEXTAUTH_URL isn't set for the right environment.
+  // We still recommend setting NEXTAUTH_URL explicitly for clarity.
+  if (isBlank(process.env.NEXTAUTH_URL)) {
+    const derived = deriveUrlFromVercel();
+    if (derived) {
+      process.env.NEXTAUTH_URL = derived;
+      if (isBlank(process.env.NEXT_PUBLIC_APP_URL)) {
+        process.env.NEXT_PUBLIC_APP_URL = derived;
+      }
+      console.warn(`[env] NEXTAUTH_URL not set; derived from VERCEL_URL: ${derived}`);
+    } else {
+      missing.push("NEXTAUTH_URL");
     }
   }
 
