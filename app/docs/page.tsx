@@ -5,17 +5,21 @@ import { MarketingShell } from "@/components/marketing/marketing-shell";
 export default function DocsPage() {
   return (
     <MarketingShell>
-      <section className="rounded-[var(--radius-window)] border border-[color:var(--border)] bg-[color:var(--surface-strong)] p-5 shadow-[var(--panel-shadow)] backdrop-blur-xl">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--text-muted)]">
-          Docs
-        </p>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight text-[color:var(--text-main)]">
-          Quick Start
-        </h1>
+      <section className="space-y-10">
+        <header className="max-w-[52rem]">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">
+            Docs
+          </p>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white">Quick Start</h1>
+          <p className="mt-3 text-[15px] leading-relaxed text-white/70">
+            Launch VSM locally, understand the security model, and keep deployment checklists close
+            for production hosting.
+          </p>
+        </header>
 
-        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-3 lg:grid-cols-2">
           <DocBlock title="Run locally">
-            <ol className="grid gap-1 text-[13px] text-[color:var(--text-muted)]">
+            <ol className="grid gap-1 text-[13px] text-white/65">
               <li>1. Configure PostgreSQL and set `DATABASE_URL` in `.env`.</li>
               <li>2. `npm install`</li>
               <li>3. `npx prisma migrate dev`</li>
@@ -25,7 +29,7 @@ export default function DocsPage() {
           </DocBlock>
 
           <DocBlock title="Security posture">
-            <ul className="grid gap-1 text-[13px] text-[color:var(--text-muted)]">
+            <ul className="grid gap-1 text-[13px] text-white/65">
               <li>Strict, tenant-scoped RBAC.</li>
               <li>High-risk actions use approvals (two-person rule) when enabled.</li>
               <li>Audit log uses a hash chain to detect tampering.</li>
@@ -33,62 +37,49 @@ export default function DocsPage() {
             </ul>
             <Link
               href="/docs/security"
-              className="mt-2 inline-flex text-[13px] font-medium text-[var(--accent)] hover:underline"
+              className="mt-2 inline-flex text-[13px] font-semibold text-white/80 hover:text-white hover:underline"
             >
               Full security guide
             </Link>
           </DocBlock>
 
           <DocBlock title="Dispatch">
-            <p className="text-[13px] leading-relaxed text-[color:var(--text-muted)]">
+            <p className="text-[13px] leading-relaxed text-white/65">
               Calls follow a server-enforced state machine. Each transition writes a DispatchEvent
               and an AuditLog entry.
             </p>
           </DocBlock>
 
           <DocBlock title="Map">
-            <p className="text-[13px] leading-relaxed text-[color:var(--text-muted)]">
-              Static tactical map image rendering with pan/zoom overlays for calls, units, POIs,
-              zones, pings, labels, and postal grid.
+            <p className="text-[13px] leading-relaxed text-white/65">
+              Static tactical map rendering with pan/zoom overlays for calls, POIs, zones, pings,
+              labels, and grid tools.
             </p>
           </DocBlock>
 
           <DocBlock title="Deploy">
-            <p className="text-[13px] leading-relaxed text-[color:var(--text-muted)]">
+            <p className="text-[13px] leading-relaxed text-white/65">
               Production checklist for secrets, migrations, HTTPS, owner bootstrap, and post-deploy
               verification.
             </p>
             <Link
               href="/docs/deploy"
-              className="mt-2 inline-flex text-[13px] font-medium text-[var(--accent)] hover:underline"
+              className="mt-2 inline-flex text-[13px] font-semibold text-white/80 hover:text-white hover:underline"
             >
               Open deployment checklist
             </Link>
           </DocBlock>
 
           <DocBlock id="shortcuts" title="Keyboard shortcuts">
-            <ul className="grid gap-1 text-[13px] text-[color:var(--text-muted)]">
+            <ul className="grid gap-1 text-[13px] text-white/65">
               <li>`Cmd/Ctrl + K` opens the global command bar.</li>
               <li>`Esc` closes dialogs, palette, and focused overlays.</li>
-              <li>Use map layer toggles to isolate calls/units/POIs/zones quickly.</li>
+              <li>Use map layer toggles to isolate calls/POIs/zones quickly.</li>
             </ul>
           </DocBlock>
         </div>
 
-        <div className="mt-6 flex flex-wrap items-center gap-2">
-          <Link
-            href="/app"
-            className="ui-transition inline-flex h-9 items-center justify-center rounded-[var(--radius-control)] bg-[var(--accent)] px-4 text-[13px] font-semibold text-white hover:brightness-[1.04]"
-          >
-            Open Web App
-          </Link>
-          <Link
-            href="/features"
-            className="ui-transition inline-flex h-9 items-center justify-center rounded-[var(--radius-control)] border border-[color:var(--border)] bg-[color:var(--surface)] px-4 text-[13px] font-semibold text-[color:var(--text-main)] hover:bg-black/[0.03] dark:hover:bg-white/[0.06]"
-          >
-            View Features
-          </Link>
-        </div>
+        {/* CTAs live in the top nav and the landing hero to avoid repetitive prompts. */}
       </section>
     </MarketingShell>
   );
@@ -106,9 +97,9 @@ function DocBlock({
   return (
     <div
       id={id}
-      className="ui-transition rounded-[var(--radius-panel)] border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-4 shadow-[var(--panel-shadow)] hover:-translate-y-0.5 hover:border-[color:color-mix(in_srgb,var(--accent)_12%,var(--border))]"
+      className="ui-transition rounded-[26px] border border-white/10 bg-white/[0.05] p-5 hover:-translate-y-0.5 hover:border-white/15 hover:bg-white/[0.07]"
     >
-      <p className="text-[13px] font-semibold text-[color:var(--text-main)]">{title}</p>
+      <p className="text-[13px] font-semibold text-white">{title}</p>
       <div className="mt-2">{children}</div>
     </div>
   );

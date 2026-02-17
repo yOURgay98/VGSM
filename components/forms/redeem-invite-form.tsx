@@ -29,7 +29,7 @@ export function RedeemInviteForm({
     if (!state.success) return;
     const requireApproval = Boolean(state.data && (state.data as any).requireApproval);
     if (requireApproval) return;
-    const callbackUrl = "/app/dashboard?tour=welcome";
+    const callbackUrl = "/app/dashboard";
     const t = window.setTimeout(() => {
       router.push(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
     }, 450);

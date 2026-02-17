@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 
 const requiredEnv = [
@@ -23,36 +21,34 @@ const deploySteps = [
 export default function DeployDocsPage() {
   return (
     <MarketingShell>
-      <section className="rounded-[var(--radius-window)] border border-[color:var(--border)] bg-[color:var(--surface-strong)] p-5 shadow-[var(--panel-shadow)] backdrop-blur-xl">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--text-muted)]">
-          Deploy
-        </p>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight text-[color:var(--text-main)]">
-          Production Deployment Checklist
-        </h1>
-        <p className="mt-2 text-[14px] text-[color:var(--text-muted)]">
-          Use this checklist to deploy VSM securely on public hosting.
-        </p>
+      <section className="space-y-10">
+        <header className="max-w-[52rem]">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">
+            Deploy
+          </p>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white">
+            Production Deployment Checklist
+          </h1>
+          <p className="mt-3 text-[15px] leading-relaxed text-white/70">
+            Use this checklist to deploy VSM securely on public hosting.
+          </p>
+        </header>
 
-        <div className="mt-4 grid gap-3 lg:grid-cols-2">
-          <article className="ui-transition rounded-[var(--radius-panel)] border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-4 shadow-[var(--panel-shadow)]">
-            <p className="text-[13px] font-semibold text-[color:var(--text-main)]">
-              Required environment variables
-            </p>
-            <ul className="mt-2 grid gap-1 text-[13px] text-[color:var(--text-muted)]">
+        <div className="grid gap-3 lg:grid-cols-2">
+          <article className="rounded-[26px] border border-white/10 bg-white/[0.05] p-5">
+            <p className="text-[13px] font-semibold text-white">Required environment variables</p>
+            <ul className="mt-3 grid gap-1 text-[13px] text-white/65">
               {requiredEnv.map((key) => (
                 <li key={key}>
-                  <code>{key}</code>
+                  <code className="text-white/80">{key}</code>
                 </li>
               ))}
             </ul>
           </article>
 
-          <article className="ui-transition rounded-[var(--radius-panel)] border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-4 shadow-[var(--panel-shadow)]">
-            <p className="text-[13px] font-semibold text-[color:var(--text-main)]">
-              Deployment steps
-            </p>
-            <ol className="mt-2 grid gap-1 text-[13px] text-[color:var(--text-muted)]">
+          <article className="rounded-[26px] border border-white/10 bg-white/[0.05] p-5">
+            <p className="text-[13px] font-semibold text-white">Deployment steps</p>
+            <ol className="mt-3 grid gap-1 text-[13px] text-white/65">
               {deploySteps.map((step, index) => (
                 <li key={step}>
                   {index + 1}. {step}
@@ -62,20 +58,7 @@ export default function DeployDocsPage() {
           </article>
         </div>
 
-        <div className="mt-5 flex flex-wrap items-center gap-2">
-          <Link
-            href="/app"
-            className="ui-transition inline-flex h-9 items-center justify-center rounded-[var(--radius-control)] bg-[var(--accent)] px-4 text-[13px] font-semibold text-white hover:brightness-[1.04]"
-          >
-            Open Web App
-          </Link>
-          <Link
-            href="/docs/security"
-            className="ui-transition inline-flex h-9 items-center justify-center rounded-[var(--radius-control)] border border-[color:var(--border)] bg-[color:var(--surface)] px-4 text-[13px] font-semibold text-[color:var(--text-main)] hover:bg-black/[0.03] dark:hover:bg-white/[0.06]"
-          >
-            Security Guide
-          </Link>
-        </div>
+        {/* CTAs live in the top nav and the landing hero. */}
       </section>
     </MarketingShell>
   );

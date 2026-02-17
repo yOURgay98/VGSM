@@ -19,9 +19,9 @@ export function CreateInviteForm({
 }: {
   roleOptions: Array<{ value: string; label: string }>;
   templateOptions: Array<{ value: string; label: string }>;
-}) {
+  }) {
   const [state, action, pending] = useActionState(createInviteAction, initialState);
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState<"invite" | null>(null);
   const [templateId, setTemplateId] = useState<string>("");
 
   const inviteUrl = typeof state.data?.inviteUrl === "string" ? state.data.inviteUrl : "";
@@ -137,11 +137,11 @@ export function CreateInviteForm({
               type="button"
               onClick={async () => {
                 await navigator.clipboard.writeText(inviteUrl);
-                setCopied(true);
-                setTimeout(() => setCopied(false), 1200);
+                setCopied("invite");
+                setTimeout(() => setCopied(null), 1200);
               }}
             >
-              {copied ? "Copied" : "Copy"}
+              {copied === "invite" ? "Copied" : "Copy"}
             </Button>
           </div>
           <p className="mt-2 text-xs text-[color:var(--text-muted)]">

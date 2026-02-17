@@ -97,15 +97,6 @@ export function TitleBar({ title, user, community, communities }: TitleBarProps)
               <DropdownMenuItem asChild>
                 <Link href="/app/moderation">Moderation Desk quick start</Link>
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onSelect={() => {
-                  window.dispatchEvent(
-                    new CustomEvent("vsm:tour:start", { detail: { force: true } }),
-                  );
-                }}
-              >
-                Re-run beta tour
-              </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link href="/app/settings/access-keys">Access keys guide</Link>
               </DropdownMenuItem>

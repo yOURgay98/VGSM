@@ -1,22 +1,22 @@
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 
-const CONTACT_EMAIL = "support@vsm.example";
+const CONTACT_EMAIL = "johnnywoodswork@gmail.com";
 
 export default function TermsPage() {
   return (
     <MarketingShell>
-      <section className="rounded-[var(--radius-window)] border border-[color:var(--border)] bg-[color:var(--surface-strong)] p-5 shadow-[var(--panel-shadow)] backdrop-blur-xl">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--text-muted)]">
-          Terms
-        </p>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight text-[color:var(--text-main)]">
-          Terms of Service
-        </h1>
-        <p className="mt-2 text-[13px] text-[color:var(--text-muted)]">
-          Last updated: February 16, 2026
-        </p>
+      <section className="space-y-10">
+        <header className="max-w-[52rem]">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">
+            Terms
+          </p>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white">
+            Terms of Service
+          </h1>
+          <p className="mt-3 text-[13px] text-white/60">Last updated: February 16, 2026</p>
+        </header>
 
-        <div className="mt-5 space-y-4 text-[14px] leading-relaxed text-[color:var(--text-muted)]">
+        <div className="space-y-3 text-[14px] leading-relaxed text-white/70">
           <Section title="1. Eligibility">
             VSM is intended for moderation and operations teams. You must be at least 13 years old
             to use the service. Community owners are responsible for ensuring staff access is
@@ -66,7 +66,7 @@ export default function TermsPage() {
 
           <Section title="9. Contact">
             Questions about these terms can be sent to{" "}
-            <span className="font-medium text-[color:var(--text-main)]">{CONTACT_EMAIL}</span>.
+            <span className="font-semibold text-white">{CONTACT_EMAIL}</span>.
           </Section>
         </div>
       </section>
@@ -76,8 +76,8 @@ export default function TermsPage() {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="ui-transition rounded-[var(--radius-panel)] border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-3 shadow-[var(--panel-shadow)]">
-      <h2 className="text-[14px] font-semibold text-[color:var(--text-main)]">{title}</h2>
+    <section className="rounded-[26px] border border-white/10 bg-white/[0.05] p-5">
+      <h2 className="text-[14px] font-semibold text-white">{title}</h2>
       <p className="mt-1">{children}</p>
     </section>
   );

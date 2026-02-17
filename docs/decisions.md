@@ -143,30 +143,11 @@ This document tracks non-trivial implementation decisions made while evolving ES
 - New call/POI placement workflows use `mapX/mapY` as the source of truth.
 - Legacy POIs/zones without normalized coordinates are surfaced as "unmapped" so operators can reposition them.
 
-## 2026-02-16: Welcome Beta Tour Route
+## 2026-02-17: Welcome Invite Intro Removed
 
-- Added `/welcome/[token]` for invite-token beta onboarding.
-- Flow:
-  - validate token
-  - require sign-in via login callback
-  - present a guided, skippable first-run tour
-  - continue to invite redemption/app dashboard
-- Showcase intro is fully code-driven (no uploaded video dependency).
-
-## 2026-02-16: App-Shell Tour Engine + Invite Auto-Start
-
-- Welcome tour now runs as an app-shell overlay engine (`AppTour`) so it can navigate across routes without unmounting.
-- `/welcome/[token]` is a gate:
-  - unauthenticated users get sign-in/create-account options
-  - signed-in members of the invite community go directly to `/app/dashboard?tour=welcome`
-  - signed-in non-members redeem invite join first, then route to `/app/dashboard?tour=welcome`
-- Tour completion persists per user+community in `Setting` (`key = tour.welcome.completed.<userId>`), and can be re-run from the Help menu.
-
-## 2026-02-16: Guided Tour Only (No Demo Playback)
-
-- Welcome onboarding now uses a single guided tour overlay.
-- The scripted fake-cursor showcase phase was removed for reliability and visual consistency.
-- Tour remains skippable, keyboard-accessible, and re-runnable from the Help menu.
+- Removed the `/welcome/*` invite-intro routes and related onboarding overlay.
+- Invites now flow directly through `/invite/[token]` + normal in-app onboarding.
+- Rationale: reduce complexity and keep the beta join flow straightforward during launch.
 
 ## 2026-02-16: Static Map Ping Reliability Guardrail
 

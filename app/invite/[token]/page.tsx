@@ -100,7 +100,7 @@ export default async function InviteRedeemPage({ params }: { params: Promise<{ t
                   <RedeemInviteJoinForm
                     token={token}
                     requireBetaKey={requireBetaKey}
-                    redirectTo="/app/dashboard?tour=welcome"
+                    redirectTo="/app/dashboard"
                   />
                 </>
               ) : (

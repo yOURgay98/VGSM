@@ -5,10 +5,12 @@
   "scripts": {
     "dev": "next dev --webpack",
     "dev:turbo": "next dev",
+    "prebuild": "node scripts/clean-next-types.mjs",
     "build": "next build",
-    "vercel-build": "prisma generate && prisma migrate deploy && next build",
+    "vercel-build": "node scripts/clean-next-types.mjs && prisma generate && prisma migrate deploy && next build",
     "start": "next start",
     "lint": "eslint .",
+    "pretypecheck": "node scripts/clean-next-types.mjs",
     "typecheck": "tsc --noEmit",
     "format": "prettier . --write",
     "format:check": "prettier . --check",

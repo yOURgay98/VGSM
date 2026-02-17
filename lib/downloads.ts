@@ -1,5 +1,7 @@
 import { existsSync, readdirSync } from "node:fs";
+import { readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { format } from "date-fns";
 
 export type DownloadPlatform = "win" | "mac" | "linux";
 
@@ -92,4 +94,113 @@ export function listRawDownloadFiles(): string[] {
   } catch {
     return [];
   }
+}
+
+type DownloadReleaseManifest = {
+  version?: string;
+  releasedAt?: string; // ISO date or datetime
+  checksumsSha256?: Record<string, string>;
+};
+
+export type DownloadReleaseInfo = {
+  version: string;
+  releasedAtLabel: string | null;
+  checksumsSha256: Record<string, string> | null;
+};
+
+function safeReadJson<T>(path: string): T | null {
+  try {
+    return JSON.parse(readFileSync(path, "utf8")) as T;
+  } catch {
+    return null;
+  }
+}
+
+function parseSha256Sums(text: string): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const rawLine of text.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith("#")) continue;
+    // Common formats:
+    // <hash>  <file>
+    // SHA256(<file>)= <hash>
+    const m1 = line.match(/^([a-f0-9]{64})\s+\*?(.+)$/i);
+    if (m1) {
+      out[m1[2].trim()] = m1[1].toLowerCase();
+      continue;
+    }
+    const m2 = line.match(/^SHA256\((.+)\)\s*=\s*([a-f0-9]{64})$/i);
+    if (m2) {
+      out[m2[1].trim()] = m2[2].toLowerCase();
+    }
+  }
+  return out;
+}
+
+function getLatestDownloadsMtime(files: string[]): Date | null {
+  let latest: Date | null = null;
+  for (const file of files) {
+    try {
+      const st = statSync(join(downloadsDir(), file));
+      const dt = st.mtime instanceof Date ? st.mtime : new Date(st.mtime);
+      if (!latest || dt.getTime() > latest.getTime()) latest = dt;
+    } catch {
+      // Ignore.
+    }
+  }
+  return latest;
+}
+
+function getPackageVersion(): string {
+  try {
+    const pkg = safeReadJson<{ version?: string }>(join(process.cwd(), "package.json"));
+    const v = pkg?.version?.trim();
+    return v ? v : "0.0.0";
+  } catch {
+    return "0.0.0";
+  }
+}
+
+export function getDownloadReleaseInfo(): DownloadReleaseInfo {
+  const versionFallback = getPackageVersion();
+
+  // Optional release metadata file. If present, it should live alongside uploaded binaries.
+  // This keeps checksum generation out of the request path.
+  const manifestPath = join(downloadsDir(), "release.json");
+  const sumsPath = join(downloadsDir(), "SHA256SUMS.txt");
+
+  const manifest = existsSync(manifestPath)
+    ? safeReadJson<DownloadReleaseManifest>(manifestPath)
+    : null;
+
+  const availableFiles = listRawDownloadFiles();
+  const latestMtime = getLatestDownloadsMtime(availableFiles);
+
+  const releasedAtLabel = (() => {
+    const raw = manifest?.releasedAt?.trim();
+    if (raw) {
+      const dt = new Date(raw);
+      if (!Number.isNaN(dt.getTime())) return format(dt, "MMM d, yyyy");
+    }
+    if (latestMtime) return format(latestMtime, "MMM d, yyyy");
+    return null;
+  })();
+
+  const checksums = (() => {
+    if (manifest?.checksumsSha256 && Object.keys(manifest.checksumsSha256).length > 0) {
+      return manifest.checksumsSha256;
+    }
+    if (!existsSync(sumsPath)) return null;
+    try {
+      return parseSha256Sums(readFileSync(sumsPath, "utf8"));
+    } catch {
+      return null;
+    }
+  })();
+
+  return {
+    version: manifest?.version?.trim() || versionFallback,
+    releasedAtLabel,
+    checksumsSha256: checksums && Object.keys(checksums).length > 0 ? checksums : null,
+  };
 }

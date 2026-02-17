@@ -1,9 +1,10 @@
 import Link from "next/link";
 
-import { DownloadDesktopCta } from "@/components/marketing/download-desktop-cta";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
+import { RecommendedDownloadButton } from "@/components/marketing/recommended-download";
 import {
   hasAnyDownloadBinary,
+  getDownloadReleaseInfo,
   listAvailableDownloads,
   listRawDownloadFiles,
 } from "@/lib/downloads";
@@ -21,72 +22,139 @@ export default function DownloadPage() {
   const isDev = process.env.NODE_ENV !== "production";
   const available = listAvailableDownloads();
   const anyBinary = hasAnyDownloadBinary();
+  const release = getDownloadReleaseInfo();
+  const availablePlatforms = (Object.keys(PLATFORM_LABELS) as Platform[]).filter(
+    (platform) => available[platform].length > 0,
+  );
 
   return (
     <MarketingShell>
-      <section className="rounded-[var(--radius-window)] border border-[color:var(--border)] bg-[color:var(--surface-strong)] p-5 shadow-[var(--panel-shadow)] backdrop-blur-xl">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--text-muted)]">
-          Desktop
-        </p>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight text-[color:var(--text-main)]">
-          VSM Desktop
-        </h1>
-        <p className="mt-2 text-[15px] leading-relaxed text-[color:var(--text-muted)]">
-          Download the desktop utility wrapper for a focused control-window workflow. Authentication
-          and permissions remain enforced by the same VSM backend.
-        </p>
+      <section className="space-y-10">
+        <header className="max-w-[52rem]">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">
+            Download
+          </p>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white">VSM Desktop</h1>
+          <p className="mt-3 text-[15px] leading-relaxed text-white/70">
+            A focused desktop wrapper for control-window workflows. Authentication and permissions
+            remain enforced by the same VSM backend.
+          </p>
+        </header>
 
-        <div className="mt-5 flex flex-wrap items-center gap-2">
-          <DownloadDesktopCta />
-          <Link
-            href="/app"
-            className="ui-transition inline-flex h-9 items-center justify-center rounded-[var(--radius-control)] border border-[color:var(--border)] bg-[color:var(--surface)] px-4 text-[13px] font-semibold text-[color:var(--text-main)] hover:bg-black/[0.03] dark:hover:bg-white/[0.06]"
-          >
-            Open Web App
-          </Link>
-        </div>
-
-        {!anyBinary ? (
-          <div className="mt-4 rounded-[var(--radius-panel)] border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-3">
-            <p className="text-[13px] font-semibold text-[color:var(--text-main)]">
-              Desktop build not uploaded yet
-            </p>
-            <p className="mt-1 text-[13px] text-[color:var(--text-muted)]">
-              Web access is fully available right now. Desktop builds can be added at any time and
-              will immediately activate one-click download.
-            </p>
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              <Link
-                href="/app"
-                className="ui-transition inline-flex h-8 items-center justify-center rounded-[var(--radius-control)] bg-[var(--accent)] px-3 text-[12px] font-semibold text-white hover:brightness-[1.04]"
-              >
-                Continue in web app
-              </Link>
-              {isDev ? (
-                <Link
-                  href="/docs/desktop"
-                  className="ui-transition inline-flex h-8 items-center justify-center rounded-[var(--radius-control)] border border-[color:var(--border)] px-3 text-[12px] font-semibold text-[color:var(--text-main)] hover:bg-black/[0.03] dark:hover:bg-white/[0.06]"
-                >
-                  Build desktop locally
+        {anyBinary ? (
+          <div className="grid gap-4 lg:grid-cols-[0.62fr_0.38fr]">
+            <div className="rounded-[26px] border border-white/10 bg-white/[0.05] p-6">
+              <p className="text-[13px] font-semibold text-white">Recommended download</p>
+              <p className="mt-2 text-[13px] text-white/65">
+                Version{" "}
+                <span className="font-semibold text-white/85">v{release.version}</span>
+                {release.releasedAtLabel ? (
+                  <>
+                    <span className="mx-2 text-white/30" aria-hidden>
+                      •
+                    </span>
+                    Released{" "}
+                    <span className="font-semibold text-white/85">{release.releasedAtLabel}</span>
+                  </>
+                ) : null}
+              </p>
+              <div className="mt-4">
+                <RecommendedDownloadButton availablePlatforms={availablePlatforms} />
+              </div>
+              <div className="mt-4 text-xs text-white/55">
+                <Link href="/docs/desktop#verify" className="mkt-link text-xs">
+                  Verify downloads
                 </Link>
-              ) : null}
+              </div>
+            </div>
+
+            <div className="rounded-[26px] border border-white/10 bg-white/[0.04] p-6">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">
+                Platforms
+              </p>
+              <p className="mt-3 text-[13px] leading-relaxed text-white/65">
+                Need a different OS build? Choose a platform below. Files are served directly from{" "}
+                <code className="text-white/80">/downloads</code>.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2 text-xs text-white/60">
+                <span className="rounded-full border border-white/10 bg-black/25 px-3 py-1">
+                  Windows
+                </span>
+                <span className="rounded-full border border-white/10 bg-black/25 px-3 py-1">
+                  macOS
+                </span>
+                <span className="rounded-full border border-white/10 bg-black/25 px-3 py-1">
+                  Linux
+                </span>
+              </div>
             </div>
           </div>
-        ) : null}
+        ) : (
+          <div className="rounded-[26px] border border-white/10 bg-white/[0.04] p-6">
+            <p className="text-[13px] font-semibold text-white">Desktop builds not published yet</p>
+            <p className="mt-2 text-[13px] leading-relaxed text-white/65">
+              The web console is fully available right now. When a desktop release is uploaded, this
+              page will automatically switch to one-click downloads.
+            </p>
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <Link href="/app" className="mkt-btn mkt-btn-primary">
+                Open Web Console
+              </Link>
+              <Link href="/docs/desktop" className="mkt-btn mkt-btn-secondary">
+                Build from source
+              </Link>
+            </div>
+          </div>
+        )}
 
-        <div className="mt-6 grid gap-3 md:grid-cols-3">
+        <div className="grid gap-3 md:grid-cols-3">
           {(Object.keys(PLATFORM_LABELS) as Platform[]).map((platform) => (
             <PlatformCard key={platform} platform={platform} entries={available[platform]} />
           ))}
         </div>
 
+        {anyBinary ? (
+          <div className="rounded-[26px] border border-white/10 bg-white/[0.03] p-6">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">
+              Integrity
+            </p>
+            {release.checksumsSha256 ? (
+              <>
+                <p className="mt-2 text-[13px] leading-relaxed text-white/65">
+                  Published SHA256 checksums are listed below. Use{" "}
+                  <Link href="/docs/desktop#verify" className="mkt-link">
+                    verification instructions
+                  </Link>{" "}
+                  to compare locally.
+                </p>
+                <div className="mt-4 overflow-auto rounded-[18px] border border-white/10 bg-black/25 p-4 text-[12px] text-white/80">
+                  <div className="grid gap-2">
+                    {Object.entries(release.checksumsSha256).map(([file, sum]) => (
+                      <div key={file} className="grid gap-1 sm:grid-cols-[1fr_auto] sm:items-center">
+                        <code className="break-all text-white/85">{file}</code>
+                        <code className="break-all text-white/60">{sum}</code>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <p className="mt-2 text-[13px] leading-relaxed text-white/65">
+                Checksums can be published with desktop releases (optional). If you uploaded a{" "}
+                <code className="text-white/80">SHA256SUMS.txt</code> file in{" "}
+                <code className="text-white/80">public/downloads</code>, they’ll appear here.
+              </p>
+            )}
+          </div>
+        ) : null}
+
         {isDev ? (
-          <div className="mt-4 rounded-[var(--radius-panel)] border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-3">
-            <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[color:var(--text-muted)]">
+          <div className="rounded-[26px] border border-white/10 bg-white/[0.03] p-5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">
               Dev visibility
             </p>
-            <p className="mt-1 text-[12px] text-[color:var(--text-muted)]">
-              Files currently detected in <code>public/downloads</code>:{" "}
+            <p className="mt-2 text-[12px] text-white/60">
+              Files detected in <code className="text-white/80">public/downloads</code>:{" "}
               {listRawDownloadFiles().join(", ") || "none"}
             </p>
           </div>
@@ -104,11 +172,9 @@ function PlatformCard({
   entries: Array<{ file: string; label: string }>;
 }) {
   return (
-    <div className="rounded-[var(--radius-window)] border border-[color:var(--border)] bg-[color:var(--surface-strong)] p-4 shadow-[var(--panel-shadow)] backdrop-blur-xl">
-      <p className="text-sm font-semibold text-[color:var(--text-main)]">
-        {PLATFORM_LABELS[platform]}
-      </p>
-      <p className="mt-1 text-xs text-[color:var(--text-muted)]">Desktop utility app</p>
+    <div className="rounded-[26px] border border-white/10 bg-white/[0.05] p-5 backdrop-blur-xl">
+      <p className="text-sm font-semibold text-white">{PLATFORM_LABELS[platform]}</p>
+      <p className="mt-1 text-xs text-white/65">Desktop utility app</p>
 
       {entries.length === 0 ? (
         <>
@@ -117,14 +183,12 @@ function PlatformCard({
             disabled
             className={cn(
               "ui-transition mt-4 inline-flex h-9 w-full items-center justify-center rounded-[var(--radius-control)] border px-4 text-[13px] font-semibold",
-              "border-[color:var(--border)] bg-[color:var(--surface-muted)] text-[color:var(--text-muted)] opacity-70",
+              "border-white/10 bg-white/[0.03] text-white/55 opacity-80",
             )}
           >
             Not available
           </button>
-          <p className="mt-2 text-xs text-[color:var(--text-muted)]">
-            No uploaded binary detected for this platform yet.
-          </p>
+          <p className="mt-2 text-xs text-white/55">No uploaded binary detected for this platform.</p>
         </>
       ) : (
         <div className="mt-4 space-y-2">
@@ -132,7 +196,7 @@ function PlatformCard({
             <Link
               key={entry.file}
               href={`/downloads/${entry.file}`}
-              className="ui-transition inline-flex h-9 w-full items-center justify-center rounded-[var(--radius-control)] border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-4 text-[13px] font-semibold text-[color:var(--text-main)] hover:bg-black/[0.03] dark:hover:bg-white/[0.06]"
+              className="ui-transition inline-flex h-9 w-full items-center justify-center rounded-[var(--radius-control)] border border-white/10 bg-white/[0.04] px-4 text-[13px] font-semibold text-white/85 hover:bg-white/[0.08] active:scale-[0.98]"
             >
               {entry.label}
             </Link>

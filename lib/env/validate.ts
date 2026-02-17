@@ -42,10 +42,13 @@ export function assertServerEnv() {
   if (isBlank(process.env.NEXTAUTH_URL)) {
     const derived = deriveUrlFromVercel();
     if (derived) {
-      process.env.NEXTAUTH_URL = derived;
-      if (isBlank(process.env.NEXT_PUBLIC_APP_URL)) {
-        process.env.NEXT_PUBLIC_APP_URL = derived;
-      }
+      // IMPORTANT: don't use dot-notation for `process.env.*` assignment.
+      // Next.js may inline `process.env.X` at build-time, which can turn an
+      // assignment into invalid JS (e.g. `"http://..." = derived`).
+      process.env["NEXTAUTH_URL"] = derived;
+      // NOTE: Do not assign to `NEXT_PUBLIC_*` env vars at runtime.
+      // Next/webpack will inline those variables at build-time which can turn
+      // assignments into invalid JavaScript (e.g. `"http://..." = derived`).
       console.warn(`[env] NEXTAUTH_URL not set; derived from VERCEL_URL: ${derived}`);
     } else {
       missing.push("NEXTAUTH_URL");

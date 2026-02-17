@@ -50,27 +50,29 @@ export function DownloadDesktopCta({ className }: { className?: string }) {
         type="button"
         onClick={onDownload}
         disabled={loading}
-        className="ui-transition inline-flex h-9 items-center justify-center rounded-[var(--radius-control)] border border-[color:var(--border)] bg-[color:var(--surface)] px-4 text-[13px] font-semibold text-[color:var(--text-main)] hover:bg-black/[0.03] disabled:cursor-not-allowed disabled:opacity-60 dark:hover:bg-white/[0.06]"
+        className={cn(
+          "ui-transition inline-flex h-9 items-center justify-center rounded-[var(--radius-control)] border px-4 text-[13px] font-semibold",
+          "border-white/10 bg-white/[0.04] text-white/90 hover:bg-white/[0.08]",
+          "active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60",
+        )}
       >
         {loading ? "Preparing download..." : "Download Desktop"}
       </button>
       {error ? (
-        <div className="rounded-[var(--radius-control)] border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-2 text-[12px] text-[color:var(--text-muted)]">
-          <p className="font-medium text-[color:var(--text-main)]">{error}</p>
+        <div className="rounded-[var(--radius-control)] border border-white/10 bg-white/[0.04] px-3 py-2 text-[12px] text-white/65">
+          <p className="font-medium text-white">{error}</p>
           <div className="mt-1 flex flex-wrap items-center gap-2">
             <Link
               href="/app"
-              className="ui-transition font-medium text-[var(--accent)] hover:underline"
+              className="ui-transition font-medium text-white/80 hover:text-white hover:underline"
             >
               Open Web App
             </Link>
-            <span className="text-[color:var(--text-muted)]">
-              Platform: {activePlatform ?? platform}
-            </span>
+            <span className="text-white/55">Platform: {activePlatform ?? platform}</span>
             {isDev ? (
               <Link
                 href="/docs/desktop"
-                className="ui-transition font-medium text-[var(--accent)] hover:underline"
+                className="ui-transition font-medium text-white/80 hover:text-white hover:underline"
               >
                 Build desktop app
               </Link>

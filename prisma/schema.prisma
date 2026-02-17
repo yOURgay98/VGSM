@@ -111,6 +111,7 @@ model User {
   createdAt                 DateTime              @default(now())
   updatedAt                 DateTime              @updatedAt
   lastLoginAt               DateTime?
+  welcomeIntroSeenAt        DateTime?
   accounts                  Account[]
   sessions                  Session[]
   discordAccount            DiscordAccount?

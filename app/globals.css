@@ -155,6 +155,93 @@ select {
     filter 160ms ease;
 }
 
+/* Marketing UI button system (scoped to the marketing shell). */
+.vsm-marketing .mkt-btn {
+  display: inline-flex;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: var(--radius-control);
+  padding: 0 18px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 18px 34px -30px rgba(0, 0, 0, 0.9);
+  transition:
+    transform 200ms ease,
+    filter 200ms ease,
+    background-color 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    opacity 200ms ease;
+}
+
+.vsm-marketing .mkt-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.04);
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.vsm-marketing .mkt-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.vsm-marketing .mkt-btn:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.12),
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 18px 34px -30px rgba(0, 0, 0, 0.9);
+}
+
+.vsm-marketing .mkt-btn-primary {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.02) 100%),
+    linear-gradient(180deg, rgba(36, 36, 40, 0.92) 0%, rgba(18, 18, 20, 0.94) 100%);
+}
+
+.vsm-marketing .mkt-btn-primary:hover {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.11) 0%, rgba(255, 255, 255, 0.03) 100%),
+    linear-gradient(180deg, rgba(40, 40, 44, 0.92) 0%, rgba(18, 18, 20, 0.94) 100%);
+}
+
+.vsm-marketing .mkt-btn-secondary {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.vsm-marketing .mkt-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.vsm-marketing .mkt-btn-sm {
+  height: 36px;
+  padding: 0 14px;
+}
+
+.vsm-marketing .mkt-link {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
+  transition: color 200ms ease, text-decoration-color 200ms ease, opacity 200ms ease;
+}
+
+.vsm-marketing .mkt-link:hover {
+  color: rgba(255, 255, 255, 0.95);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 1px;
+}
+
 .input-neutral {
   border-radius: var(--radius-control);
   border: 1px solid var(--border);
@@ -321,7 +408,7 @@ html[data-theme="dark"] .input-neutral {
   content: "";
   pointer-events: none;
   position: absolute;
-  inset: -25%;
+  inset: 0;
   background:
     radial-gradient(
       circle at 18% 20%,
@@ -342,6 +429,76 @@ html[data-theme="dark"] .input-neutral {
   background-image: radial-gradient(rgba(255, 255, 255, 0.18) 0.7px, transparent 0.7px);
   background-size: 3px 3px;
   opacity: 0.08;
+}
+
+.vsm-public-bg {
+  /* Prevent decorative background layers from extending the scrollable area. */
+  overflow: hidden;
+}
+
+[data-theme="light"] .vsm-marketing-bg {
+  background:
+    radial-gradient(circle at 16% 12%, rgba(17, 24, 39, 0.08), transparent 52%),
+    radial-gradient(circle at 84% 0%, rgba(17, 24, 39, 0.06), transparent 54%),
+    linear-gradient(
+      160deg,
+      rgba(247, 248, 251, 0.92) 0%,
+      rgba(235, 238, 245, 0.86) 55%,
+      rgba(227, 231, 240, 0.9) 100%
+    );
+}
+
+[data-theme="dark"] .vsm-marketing-bg,
+[data-theme="gray"] .vsm-marketing-bg {
+  /* Marketing pages use a neutral enterprise palette (no neon blue/pink). */
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.05), transparent 54%),
+    radial-gradient(
+      circle at 88% 6%,
+      color-mix(in srgb, var(--accent) 18%, transparent),
+      transparent 58%
+    ),
+    radial-gradient(circle at 62% 120%, rgba(255, 255, 255, 0.04), transparent 60%),
+    linear-gradient(160deg, #090a0c 0%, #0b0c10 48%, #060607 100%);
+}
+
+.vsm-marketing-bg::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  /* Prevent pseudo-element overflow from extending the scrollable area. */
+  inset: 0;
+  background:
+    radial-gradient(circle at 24% 22%, rgba(255, 255, 255, 0.06), transparent 56%),
+    radial-gradient(
+      circle at 72% 10%,
+      color-mix(in srgb, var(--accent) 12%, transparent),
+      transparent 64%
+    );
+  opacity: 0.42;
+  transform: translate3d(0, 0, 0);
+  animation: vsm-ambient-float 28s ease-in-out infinite alternate;
+}
+
+.vsm-marketing-bg::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.16) 0.7px, transparent 0.7px);
+  background-size: 3px 3px;
+  opacity: 0.045;
+}
+
+[data-theme="light"] .vsm-marketing-bg::after {
+  opacity: 0.08;
+}
+
+[data-theme="dark"] .vsm-marketing-bg,
+[data-theme="gray"] .vsm-marketing-bg,
+[data-theme="light"] .vsm-marketing-bg {
+  /* Background layers should never create a scrollable overflow region. */
+  overflow: hidden;
 }
 
 [data-theme="dark"] .vsm-public-bg::before {
