@@ -1,0 +1,981 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  MOD
+  TRIAL_MOD
+  VIEWER
+}
+
+enum PlayerStatus {
+  ACTIVE
+  WATCHED
+}
+
+enum ReportStatus {
+  OPEN
+  IN_REVIEW
+  RESOLVED
+  REJECTED
+}
+
+enum CaseStatus {
+  OPEN
+  IN_REVIEW
+  RESOLVED
+  CLOSED
+}
+
+enum ActionType {
+  WARNING
+  KICK
+  TEMP_BAN
+  PERM_BAN
+  NOTE
+  CLEAR
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum SavedViewScope {
+  PLAYERS
+  CASES
+  REPORTS
+  INBOX
+}
+
+enum DispatchUnitType {
+  LEO
+  EMS
+  FIRE
+  CIV
+}
+
+enum DispatchUnitStatus {
+  AVAILABLE
+  ASSIGNED
+  ENROUTE
+  ON_SCENE
+  UNAVAILABLE
+}
+
+enum DispatchCallStatus {
+  OPEN
+  ASSIGNED
+  ENROUTE
+  ON_SCENE
+  CLEARED
+  CANCELLED
+}
+
+enum ModerationMacroType {
+  REPORT_RESOLUTION
+  NOTE
+  WARNING
+  BAN_REASON
+}
+
+model User {
+  id                        String                @id @default(cuid())
+  email                     String                @unique
+  name                      String
+  passwordHash              String
+  forceChangePassword       Boolean               @default(false)
+  role                      Role                  @default(VIEWER)
+  disabledAt                DateTime?
+  failedLoginCount          Int                   @default(0)
+  lockedUntil               DateTime?
+  twoFactorEnabled          Boolean               @default(false)
+  twoFactorSecretEnc        String?
+  twoFactorPendingSecretEnc String?
+  twoFactorPendingCreatedAt DateTime?
+  createdAt                 DateTime              @default(now())
+  updatedAt                 DateTime              @updatedAt
+  lastLoginAt               DateTime?
+  accounts                  Account[]
+  sessions                  Session[]
+  discordAccount            DiscordAccount?
+  invitesCreated            Invite[]
+  moderatedActions          Action[]              @relation("ModeratorActions")
+  revokedActions            Action[]              @relation("RevokedActions")
+  assignedCases             Case[]                @relation("AssignedCases")
+  assignedReports           Report[]              @relation("AssignedReports")
+  comments                  Comment[]
+  auditLogs                 AuditLog[]
+  securityEvents            SecurityEvent[]
+  loginAttempts             LoginAttempt[]
+  backupCodes               TwoFactorBackupCode[]
+  approvalRequestsRequested ApprovalRequest[]     @relation("ApprovalRequestedBy")
+  approvalRequestsDecided   ApprovalRequest[]     @relation("ApprovalDecidedBy")
+  savedViews                SavedView[]
+  commandTogglesUpdated     CommandToggle[]       @relation("CommandTogglesUpdatedBy")
+  caseTemplatesCreated      CaseTemplate[]        @relation("CaseTemplatesCreatedBy")
+  caseTemplatesUpdated      CaseTemplate[]        @relation("CaseTemplatesUpdatedBy")
+  playerTagsAssigned        PlayerTag[]           @relation("PlayerTagsAssignedBy")
+  caseTagsAssigned          CaseTag[]             @relation("CaseTagsAssignedBy")
+  playerInternalNotes       PlayerInternalNote[]
+  caseInternalNotes         CaseInternalNote[]
+  sensitiveModeGrants       SensitiveModeGrant[]
+  commandExecutions         CommandExecution[]
+  memberships               CommunityMembership[]
+  dispatchCallsCreated      DispatchCall[]        @relation("DispatchCallsCreatedBy")
+  dispatchAssignmentsMade   DispatchAssignment[]  @relation("DispatchAssignmentsMadeBy")
+  dispatchEventsCreated     DispatchEvent[]       @relation("DispatchEventsCreatedBy")
+  radioLogsCreated          RadioLog[]            @relation("RadioLogsCreatedBy")
+  shiftsSupervised          Shift[]               @relation("ShiftSupervisedBy")
+  mapPoisCreated            MapPOI[]              @relation("MapPoisCreatedBy")
+  mapZonesCreated           MapZone[]             @relation("MapZonesCreatedBy")
+  mapViewStates             MapViewState[]
+  apiKeysCreated            ApiKey[]              @relation("ApiKeysCreatedBy")
+  betaKeysCreated           BetaAccessKey[]       @relation("BetaKeysCreatedBy")
+  moderationMacrosCreated   ModerationMacro[]     @relation("ModerationMacrosCreatedBy")
+}
+
+model Invite {
+  id                String          @id @default(cuid())
+  communityId       String          @default("community_default")
+  tokenHash         String          @unique
+  tokenPreview      String
+  roleId            String?
+  templateId        String?
+  expiresAt         DateTime?
+  maxUses           Int             @default(1)
+  uses              Int             @default(0)
+  require2fa        Boolean         @default(false)
+  requireApproval   Boolean         @default(false)
+  redeemedByUserIds String[]        @default([])
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  createdByUserId   String?
+  revokedAt         DateTime?
+  createdByUser     User?           @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+  community         Community       @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  role              CommunityRole?  @relation("InviteRole", fields: [roleId], references: [id], onDelete: SetNull)
+  template          InviteTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+
+  @@index([communityId, createdAt])
+  @@index([communityId, expiresAt])
+  @@index([communityId, revokedAt])
+}
+
+model Player {
+  id            String               @id @default(cuid())
+  communityId   String               @default("community_default")
+  name          String
+  robloxId      String?
+  discordId     String?
+  status        PlayerStatus         @default(ACTIVE)
+  notes         String?
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  community     Community            @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  actions       Action[]
+  reports       Report[]
+  casePlayers   CasePlayer[]
+  playerTags    PlayerTag[]
+  internalNotes PlayerInternalNote[]
+
+  @@index([communityId, status, updatedAt])
+  @@index([communityId, createdAt])
+}
+
+model Report {
+  id               String       @id @default(cuid())
+  communityId      String       @default("community_default")
+  reporterName     String?
+  reporterContact  String?
+  accusedPlayerId  String?
+  accusedPlayer    Player?      @relation(fields: [accusedPlayerId], references: [id], onDelete: SetNull)
+  summary          String
+  status           ReportStatus @default(OPEN)
+  caseId           String?
+  case             Case?        @relation(fields: [caseId], references: [id], onDelete: SetNull)
+  assignedToUserId String?
+  assignedToUser   User?        @relation("AssignedReports", fields: [assignedToUserId], references: [id], onDelete: SetNull)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  community        Community    @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@index([communityId, status, createdAt])
+  @@index([communityId, assignedToUserId, createdAt])
+  @@index([communityId, createdAt])
+}
+
+model Case {
+  id                    String             @id @default(cuid())
+  communityId           String             @default("community_default")
+  title                 String
+  description           String
+  status                CaseStatus         @default(OPEN)
+  assignedToUserId      String?
+  assignedToUser        User?              @relation("AssignedCases", fields: [assignedToUserId], references: [id], onDelete: SetNull)
+  evidenceUrls          String[]           @default([])
+  evidenceSensitiveUrls String[]           @default([])
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+  community             Community          @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  casePlayers           CasePlayer[]
+  caseActions           CaseAction[]
+  comments              Comment[]
+  reports               Report[]
+  caseTags              CaseTag[]
+  internalNotes         CaseInternalNote[]
+
+  @@index([communityId, status, createdAt])
+  @@index([communityId, assignedToUserId, updatedAt])
+}
+
+model CasePlayer {
+  caseId   String
+  playerId String
+  case     Case   @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  player   Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@id([caseId, playerId])
+}
+
+model Action {
+  id                    String       @id @default(cuid())
+  communityId           String       @default("community_default")
+  type                  ActionType
+  playerId              String
+  moderatorUserId       String
+  reason                String
+  durationMinutes       Int?
+  evidenceUrls          String[]     @default([])
+  evidenceSensitiveUrls String[]     @default([])
+  revokedAt             DateTime?
+  revokedByUserId       String?
+  revokedByUser         User?        @relation("RevokedActions", fields: [revokedByUserId], references: [id], onDelete: SetNull)
+  revokedReason         String?
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
+  community             Community    @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  player                Player       @relation(fields: [playerId], references: [id], onDelete: Restrict)
+  moderatorUser         User         @relation("ModeratorActions", fields: [moderatorUserId], references: [id], onDelete: Restrict)
+  caseActions           CaseAction[]
+
+  @@index([communityId, type, createdAt])
+  @@index([communityId, playerId, createdAt])
+}
+
+model CaseAction {
+  caseId   String
+  actionId String
+  case     Case   @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  action   Action @relation(fields: [actionId], references: [id], onDelete: Cascade)
+
+  @@id([caseId, actionId])
+}
+
+model Comment {
+  id          String    @id @default(cuid())
+  communityId String    @default("community_default")
+  caseId      String
+  userId      String
+  body        String
+  createdAt   DateTime  @default(now())
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  case        Case      @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([communityId, caseId, createdAt])
+}
+
+model AuditLog {
+  id           String     @id @default(cuid())
+  chainIndex   Int        @unique @default(autoincrement())
+  prevHash     String?
+  hash         String?
+  communityId  String?
+  community    Community? @relation(fields: [communityId], references: [id], onDelete: SetNull)
+  userId       String?
+  user         User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+  eventType    String
+  ip           String?
+  userAgent    String?
+  metadataJson Json?
+  createdAt    DateTime   @default(now())
+
+  @@index([communityId, eventType, createdAt])
+  @@index([communityId, createdAt])
+  @@index([eventType, createdAt])
+}
+
+model SecurityEvent {
+  id          String    @id @default(cuid())
+  communityId String?
+  userId      String?
+  severity    String    @default("MEDIUM") // LOW/MEDIUM/HIGH/CRITICAL
+  eventType   String
+  metadata    Json?
+  createdAt   DateTime  @default(now())
+
+  community Community? @relation(fields: [communityId], references: [id], onDelete: SetNull)
+  user      User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([communityId, createdAt])
+  @@index([userId, createdAt])
+  @@index([eventType, createdAt])
+  @@index([communityId, eventType, createdAt])
+}
+
+model Setting {
+  id          String    @id @default(cuid())
+  communityId String    @default("community_default")
+  key         String
+  valueJson   Json
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@unique([communityId, key])
+  @@index([communityId, updatedAt])
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken      String     @unique
+  userId            String
+  expires           DateTime
+  createdAt         DateTime   @default(now())
+  lastActiveAt      DateTime   @default(now())
+  ip                String?
+  userAgent         String?
+  currentPath       String?
+  activeCommunityId String?
+  user              User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activeCommunity   Community? @relation("ActiveCommunitySessions", fields: [activeCommunityId], references: [id], onDelete: SetNull)
+
+  @@id([sessionToken])
+  @@index([activeCommunityId, lastActiveAt])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  email     String
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  success   Boolean
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([email, createdAt])
+  @@index([userId, createdAt])
+}
+
+model TwoFactorBackupCode {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeHash      String
+  createdAt     DateTime  @default(now())
+  usedAt        DateTime?
+  usedFromIp    String?
+  usedUserAgent String?
+
+  @@index([userId, usedAt])
+}
+
+model ApprovalRequest {
+  id                String             @id @default(cuid())
+  communityId       String             @default("community_default")
+  status            ApprovalStatus     @default(PENDING)
+  riskLevel         RiskLevel
+  requestedByUserId String
+  requestedByUser   User               @relation("ApprovalRequestedBy", fields: [requestedByUserId], references: [id], onDelete: Cascade)
+  decidedByUserId   String?
+  decidedByUser     User?              @relation("ApprovalDecidedBy", fields: [decidedByUserId], references: [id], onDelete: SetNull)
+  decidedAt         DateTime?
+  reason            String?
+  payloadJson       Json
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  executions        CommandExecution[]
+  community         Community          @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@index([communityId, status, createdAt])
+  @@index([communityId, requestedByUserId, createdAt])
+}
+
+model SavedView {
+  id          String         @id @default(cuid())
+  communityId String         @default("community_default")
+  userId      String
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scope       SavedViewScope
+  name        String
+  filtersJson Json
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  community   Community      @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@unique([communityId, userId, scope, name])
+  @@index([communityId, userId, scope, updatedAt])
+}
+
+model CommandToggle {
+  communityId     String    @default("community_default")
+  id              String
+  enabled         Boolean   @default(true)
+  updatedAt       DateTime  @updatedAt
+  updatedByUserId String?
+  updatedByUser   User?     @relation("CommandTogglesUpdatedBy", fields: [updatedByUserId], references: [id], onDelete: SetNull)
+  community       Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@id([communityId, id])
+  @@index([communityId, updatedAt])
+}
+
+model SensitiveModeGrant {
+  sessionToken String   @id
+  userId       String
+  enabledAt    DateTime @default(now())
+  expiresAt    DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+}
+
+model CommandExecution {
+  id                String           @id @default(cuid())
+  communityId       String           @default("community_default")
+  commandId         String
+  riskLevel         RiskLevel
+  userId            String
+  approvalRequestId String?
+  createdAt         DateTime         @default(now())
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  approvalRequest   ApprovalRequest? @relation(fields: [approvalRequestId], references: [id], onDelete: SetNull)
+  community         Community        @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@index([communityId, userId, createdAt])
+  @@index([communityId, commandId, createdAt])
+}
+
+model Tag {
+  id          String      @id @default(cuid())
+  communityId String      @default("community_default")
+  name        String
+  color       String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  community   Community   @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  playerTags  PlayerTag[]
+  caseTags    CaseTag[]
+
+  @@unique([communityId, name])
+  @@index([communityId, updatedAt])
+}
+
+model PlayerTag {
+  communityId      String    @default("community_default")
+  playerId         String
+  tagId            String
+  assignedAt       DateTime  @default(now())
+  assignedByUserId String?
+  community        Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  player           Player    @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  tag              Tag       @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  assignedByUser   User?     @relation("PlayerTagsAssignedBy", fields: [assignedByUserId], references: [id], onDelete: SetNull)
+
+  @@id([playerId, tagId])
+  @@index([communityId, tagId])
+  @@index([assignedByUserId, assignedAt])
+}
+
+model CaseTag {
+  communityId      String    @default("community_default")
+  caseId           String
+  tagId            String
+  assignedAt       DateTime  @default(now())
+  assignedByUserId String?
+  community        Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  case             Case      @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  tag              Tag       @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  assignedByUser   User?     @relation("CaseTagsAssignedBy", fields: [assignedByUserId], references: [id], onDelete: SetNull)
+
+  @@id([caseId, tagId])
+  @@index([communityId, tagId])
+  @@index([assignedByUserId, assignedAt])
+}
+
+model CaseTemplate {
+  id                  String     @id @default(cuid())
+  communityId         String     @default("community_default")
+  name                String
+  titleTemplate       String
+  descriptionTemplate String
+  defaultStatus       CaseStatus @default(OPEN)
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+  createdByUserId     String?
+  updatedByUserId     String?
+  community           Community  @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  createdByUser       User?      @relation("CaseTemplatesCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  updatedByUser       User?      @relation("CaseTemplatesUpdatedBy", fields: [updatedByUserId], references: [id], onDelete: SetNull)
+
+  @@unique([communityId, name])
+  @@index([communityId, updatedAt])
+}
+
+model PlayerInternalNote {
+  id          String    @id @default(cuid())
+  communityId String    @default("community_default")
+  playerId    String
+  userId      String
+  body        String
+  createdAt   DateTime  @default(now())
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  player      Player    @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([communityId, playerId, createdAt])
+}
+
+model CaseInternalNote {
+  id          String    @id @default(cuid())
+  communityId String    @default("community_default")
+  caseId      String
+  userId      String
+  body        String
+  createdAt   DateTime  @default(now())
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  case        Case      @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([communityId, caseId, createdAt])
+}
+
+model Community {
+  id           String   @id @default(cuid())
+  name         String
+  slug         String   @unique
+  settingsJson Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  memberships         CommunityMembership[]
+  roles               CommunityRole[]
+  inviteTemplates     InviteTemplate[]
+  invites             Invite[]
+  apiKeys             ApiKey[]
+  betaAccessKeys      BetaAccessKey[]
+  discordConfig       DiscordCommunityConfig?
+  players             Player[]
+  reports             Report[]
+  cases               Case[]
+  actions             Action[]
+  comments            Comment[]
+  auditLogs           AuditLog[]
+  securityEvents      SecurityEvent[]
+  settings            Setting[]
+  savedViews          SavedView[]
+  commandToggles      CommandToggle[]
+  approvals           ApprovalRequest[]
+  commandExecutions   CommandExecution[]
+  tags                Tag[]
+  playerTags          PlayerTag[]
+  caseTags            CaseTag[]
+  caseTemplates       CaseTemplate[]
+  playerInternalNotes PlayerInternalNote[]
+  caseInternalNotes   CaseInternalNote[]
+  activeSessions      Session[]             @relation("ActiveCommunitySessions")
+  dispatchUnits       DispatchUnit[]
+  dispatchCalls       DispatchCall[]
+  dispatchAssignments DispatchAssignment[]
+  dispatchEvents      DispatchEvent[]
+  shifts              Shift[]
+  radioLogs           RadioLog[]
+  mapPois             MapPOI[]
+  mapZones            MapZone[]
+  mapViewStates       MapViewState[]
+  moderationMacros    ModerationMacro[]
+}
+
+model ModerationMacro {
+  id              String              @id @default(cuid())
+  communityId     String              @default("community_default")
+  name            String
+  type            ModerationMacroType
+  templateText    String
+  createdByUserId String?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  community     Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  createdByUser User?     @relation("ModerationMacrosCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  @@index([communityId, type, createdAt])
+  @@index([communityId, createdAt])
+  @@unique([communityId, name])
+}
+
+model DispatchUnit {
+  id             String             @id @default(cuid())
+  communityId    String             @default("community_default")
+  callSign       String
+  type           DispatchUnitType
+  status         DispatchUnitStatus @default(AVAILABLE)
+  assignedCallId String?
+  lastLat        Float?
+  lastLng        Float?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  community    Community            @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  assignedCall DispatchCall?        @relation(fields: [assignedCallId], references: [id], onDelete: SetNull)
+  assignments  DispatchAssignment[]
+  events       DispatchEvent[]
+  radioLogs    RadioLog[]
+
+  @@unique([communityId, callSign])
+  @@index([communityId, status, updatedAt])
+  @@index([communityId, assignedCallId])
+  @@index([communityId, createdAt])
+}
+
+model DispatchCall {
+  id              String             @id @default(cuid())
+  communityId     String             @default("community_default")
+  title           String
+  description     String
+  priority        Int                @default(3)
+  status          DispatchCallStatus @default(OPEN)
+  locationName    String?
+  lat             Float?
+  lng             Float?
+  mapX            Float?
+  mapY            Float?
+  createdByUserId String
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  community     Community            @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  createdByUser User                 @relation("DispatchCallsCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  assignments   DispatchAssignment[]
+  events        DispatchEvent[]
+  radioLogs     RadioLog[]
+  unitsAssigned DispatchUnit[]
+
+  @@index([communityId, status, createdAt])
+  @@index([communityId, priority, createdAt])
+  @@index([communityId, createdAt])
+}
+
+model DispatchAssignment {
+  id               String   @id @default(cuid())
+  communityId      String   @default("community_default")
+  callId           String
+  unitId           String
+  assignedByUserId String
+  assignedAt       DateTime @default(now())
+
+  community      Community    @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  call           DispatchCall @relation(fields: [callId], references: [id], onDelete: Cascade)
+  unit           DispatchUnit @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  assignedByUser User         @relation("DispatchAssignmentsMadeBy", fields: [assignedByUserId], references: [id], onDelete: Restrict)
+
+  @@unique([callId, unitId])
+  @@index([communityId, callId, assignedAt])
+  @@index([communityId, unitId, assignedAt])
+}
+
+model DispatchEvent {
+  id              String   @id @default(cuid())
+  communityId     String   @default("community_default")
+  callId          String?
+  unitId          String?
+  type            String
+  message         String
+  createdByUserId String?
+  createdAt       DateTime @default(now())
+
+  community     Community     @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  call          DispatchCall? @relation(fields: [callId], references: [id], onDelete: Cascade)
+  unit          DispatchUnit? @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  createdByUser User?         @relation("DispatchEventsCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  @@index([communityId, createdAt])
+  @@index([communityId, callId, createdAt])
+  @@index([communityId, unitId, createdAt])
+}
+
+model Shift {
+  id               String    @id @default(cuid())
+  communityId      String    @default("community_default")
+  supervisorUserId String?
+  startAt          DateTime
+  endAt            DateTime?
+  notes            String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  community      Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  supervisorUser User?     @relation("ShiftSupervisedBy", fields: [supervisorUserId], references: [id], onDelete: SetNull)
+
+  @@index([communityId, startAt])
+}
+
+model RadioLog {
+  id              String   @id @default(cuid())
+  communityId     String   @default("community_default")
+  callId          String?
+  unitId          String?
+  channel         String
+  message         String
+  createdByUserId String
+  createdAt       DateTime @default(now())
+
+  community     Community     @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  call          DispatchCall? @relation(fields: [callId], references: [id], onDelete: SetNull)
+  unit          DispatchUnit? @relation(fields: [unitId], references: [id], onDelete: SetNull)
+  createdByUser User          @relation("RadioLogsCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+
+  @@index([communityId, createdAt])
+  @@index([communityId, callId, createdAt])
+  @@index([communityId, unitId, createdAt])
+}
+
+model MapPOI {
+  id          String   @id @default(cuid())
+  communityId String   @default("community_default")
+  name        String
+  description String?
+  category    String   @default("general")
+  lat         Float?
+  lng         Float?
+  mapX        Float?
+  mapY        Float?
+  icon        String?
+  color       String?
+  isHidden    Boolean  @default(false)
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  createdBy User?     @relation("MapPoisCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([communityId, category])
+  @@index([communityId, createdAt])
+}
+
+model MapZone {
+  id          String   @id @default(cuid())
+  communityId String   @default("community_default")
+  name        String
+  zoneType    String   @default("patrol")
+  geojson     Json
+  color       String?
+  isHidden    Boolean  @default(false)
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  createdBy User?     @relation("MapZonesCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([communityId, zoneType])
+  @@index([communityId, createdAt])
+}
+
+model MapViewState {
+  id            String   @id @default(cuid())
+  communityId   String   @default("community_default")
+  userId        String
+  scope         String   @default("dispatch")
+  centerLat     Float    @default(0)
+  centerLng     Float    @default(0)
+  zoom          Float    @default(10)
+  enabledLayers Json
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([communityId, userId, scope])
+  @@index([communityId, userId])
+}
+
+model CommunityMembership {
+  id          String   @id @default(cuid())
+  communityId String
+  userId      String
+  roleId      String
+  createdAt   DateTime @default(now())
+
+  community Community     @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      CommunityRole @relation(fields: [roleId], references: [id], onDelete: Restrict)
+
+  @@unique([communityId, userId])
+  @@index([communityId, createdAt])
+  @@index([userId, createdAt])
+  @@index([communityId, roleId])
+}
+
+model CommunityRole {
+  id              String   @id @default(cuid())
+  communityId     String
+  name            String
+  description     String?
+  isSystemDefault Boolean  @default(false)
+  priority        Int      @default(100)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  community       Community                 @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  permissions     CommunityRolePermission[]
+  memberships     CommunityMembership[]
+  inviteTemplates InviteTemplate[]          @relation("InviteTemplateDefaultRole")
+  invites         Invite[]                  @relation("InviteRole")
+
+  @@unique([communityId, name])
+  @@index([communityId, priority])
+}
+
+model CommunityRolePermission {
+  roleId     String
+  permission String
+
+  role CommunityRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permission])
+  @@index([permission])
+}
+
+model InviteTemplate {
+  id               String   @id @default(cuid())
+  communityId      String
+  name             String
+  defaultRoleId    String
+  expiresInMinutes Int?
+  maxUses          Int?
+  require2fa       Boolean  @default(false)
+  requireApproval  Boolean  @default(false)
+  notes            String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  community   Community     @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  defaultRole CommunityRole @relation("InviteTemplateDefaultRole", fields: [defaultRoleId], references: [id], onDelete: Restrict)
+  invites     Invite[]
+
+  @@unique([communityId, name])
+  @@index([communityId, createdAt])
+}
+
+model DiscordAccount {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  discordUserId  String   @unique
+  username       String?
+  discriminator  String?
+  avatar         String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([discordUserId])
+}
+
+model DiscordCommunityConfig {
+  id                  String   @id @default(cuid())
+  communityId         String   @unique
+  guildId             String
+  botTokenEnc         String?
+  approvalsChannelId  String?
+  dispatchChannelId   String?
+  securityChannelId   String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@index([guildId])
+}
+
+model ApiKey {
+  id              String    @id @default(cuid())
+  communityId     String
+  name            String
+  keyHash         String    @unique
+  permissionsJson Json
+  createdAt       DateTime  @default(now())
+  revokedAt       DateTime?
+  createdByUserId String?
+
+  community     Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  createdByUser User?     @relation("ApiKeysCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  @@index([communityId, createdAt])
+  @@index([communityId, revokedAt])
+}
+
+model BetaAccessKey {
+  id              String    @id @default(cuid())
+  communityId     String    @default("community_default")
+  keyHash         String    @unique
+  label           String?
+  maxUses         Int       @default(1)
+  uses            Int       @default(0)
+  expiresAt       DateTime?
+  createdByUserId String?
+  createdAt       DateTime  @default(now())
+  revokedAt       DateTime?
+
+  community     Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  createdByUser User?     @relation("BetaKeysCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  @@index([communityId, createdAt])
+  @@index([communityId, revokedAt])
+  @@index([communityId, expiresAt])
+}

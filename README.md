@@ -1,36 +1,141 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ERLC Moderation Panel
 
-## Getting Started
+Production-oriented moderation dashboard for ERLC roleplay communities.
 
-First, run the development server:
+## Stack
+
+- Next.js App Router + TypeScript
+- TailwindCSS + shadcn/ui-style components + lucide-react
+- Framer Motion (subtle UX animations)
+- PostgreSQL + Prisma ORM
+- NextAuth (Credentials + optional Discord OAuth)
+- zod validation
+- Vitest unit tests for auth/security utilities
+
+## Features
+
+- Invite-only auth with database-backed sessions (NextAuth) and role-based access (`OWNER`, `ADMIN`, `MOD`, `TRIAL_MOD`, `VIEWER`)
+- Neutral macOS utility UI with 3-pane workflow (List + Inspector) on Players/Cases/Reports
+- Global Cmd/Ctrl+K command bar: search + audited staff commands
+- Commands framework with two-person approvals for high-risk commands (configurable)
+- Reports/Cases/Actions/Players core moderation workflows + quick actions
+- Inbox triage page (unassigned reports/cases + pending approvals)
+- Real TOTP 2FA + backup codes + session management (profile)
+- Audit log with tamper-evident hash chain + integrity status in viewer
+- Saved Views (per user) for common filter setups
+- Minimal analytics (staff activity + avg report resolution time)
+
+## Route Map
+
+- `/login`
+- `/invite/[token]`
+- `/app`
+- `/app/dashboard`
+- `/app/inbox`
+- `/app/players`
+- `/app/players/[id]`
+- `/app/reports`
+- `/app/cases`
+- `/app/cases/[id]`
+- `/app/cases/[id]/export`
+- `/app/actions`
+- `/app/commands`
+- `/app/analytics`
+- `/app/audit`
+- `/app/settings`
+- `/app/profile`
+
+## Setup
+
+1. Install dependencies
+
+```bash
+npm install
+```
+
+2. Create env file
+
+```bash
+cp .env.example .env
+```
+
+3. Set PostgreSQL connection in `.env`
+
+```env
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/erlc_panel?schema=public"
+AUTH_SECRET="replace-with-long-random-secret"
+NEXTAUTH_SECRET="replace-with-long-random-secret"
+AUTH_ENCRYPTION_KEY="replace-with-32-byte-base64-or-64-char-hex"
+NEXTAUTH_URL="http://localhost:3000"
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+AUTH_BYPASS="false"
+AUTH_BYPASS_ROLE="OWNER"
+SECURITY_REQUIRE_2FA_DEFAULT="true"
+SECURITY_TWO_PERSON_DEFAULT="true"
+DISCORD_CLIENT_ID=""
+DISCORD_CLIENT_SECRET=""
+```
+
+4. Generate Prisma client + run migration
+
+```bash
+npm run prisma:generate
+npm run prisma:migrate
+```
+
+5. Seed demo data
+
+```bash
+npm run prisma:seed
+```
+
+6. Run locally
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Seeded Credentials
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Owner: `owner@example.com` / `ChangeMe123!`
+- Admin: `admin@example.com` / `ChangeMe123!`
+- Mod: `mod@example.com` / `ChangeMe123!`
+- Trial Mod: `trialmod@example.com` / `ChangeMe123!`
+- Viewer: `viewer@example.com` / `ChangeMe123!`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Port Conflicts (EADDRINUSE)
 
-## Learn More
+If port `3000` is already in use, either stop the existing Node/Next process or run on a different port:
 
-To learn more about Next.js, take a look at the following resources:
+PowerShell:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```powershell
+$env:PORT=3001
+$env:NEXTAUTH_URL="http://localhost:3001"
+$env:NEXT_PUBLIC_APP_URL="http://localhost:3001"
+npm run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Temporary Auth Bypass
 
-## Deploy on Vercel
+- Set `AUTH_BYPASS="true"` in `.env` to skip sign in and enter the app directly.
+- Set `AUTH_BYPASS="false"` when you are ready to restore normal login.
+- `AUTH_BYPASS` is automatically disabled when `NODE_ENV=production`.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Tests
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run test
+```
+
+## Security Notes
+
+- Server-side validation via zod on mutation actions
+- Password hashing with bcrypt (`bcryptjs`)
+- Login rate limiting (in-memory baseline)
+- Permission-based RBAC + privilege safety rules (no escalation, no peer/higher edits)
+- Audit logging on auth, sessions, approvals, role/settings, and moderation events
+
+## ERLC Integration Stub
+
+- `lib/integrations/erlc.ts` contains a clean fake adapter interface for future live API wiring.

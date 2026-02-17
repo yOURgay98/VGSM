@@ -1,0 +1,20 @@
+﻿<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='900' viewBox='0 0 1200 900' fill='none'>
+  <defs>
+    <linearGradient id='g' x1='72' y1='88' x2='1108' y2='824' gradientUnits='userSpaceOnUse'>
+      <stop stop-color='#6EE7B7'/>
+      <stop offset='1' stop-color='#22D3EE'/>
+    </linearGradient>
+    <radialGradient id='r' cx='0' cy='0' r='1' gradientUnits='userSpaceOnUse' gradientTransform='translate(270 230) rotate(37) scale(440 380)'>
+      <stop stop-color='white' stop-opacity='0.46'/>
+      <stop offset='1' stop-color='white' stop-opacity='0'/>
+    </radialGradient>
+  </defs>
+  <rect width='1200' height='900' fill='url(#g)'/>
+  <rect x='76' y='76' width='1048' height='748' rx='44' fill='#ECFEFF' fill-opacity='0.32' stroke='white' stroke-opacity='0.4'/>
+  <rect x='126' y='126' width='950' height='648' rx='34' fill='url(#r)'/>
+  <circle cx='1010' cy='208' r='110' fill='white' fill-opacity='0.28'/>
+  <path d='M153 650C264 541 397 474 563 474C724 474 876 540 1038 656V770H153V650Z' fill='white' fill-opacity='0.23'/>
+  <text x='160' y='266' fill='white' fill-opacity='0.84' font-family='Inter, system-ui, sans-serif' font-size='84' font-weight='600'>ESS Console</text>
+  <text x='160' y='340' fill='white' fill-opacity='0.74' font-family='Inter, system-ui, sans-serif' font-size='36'>Gallery preview</text>
+</svg>
+

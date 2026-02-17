@@ -1,0 +1,364 @@
+[
+  {
+    "id": "st-main-1",
+    "name": "Main Street",
+    "type": "street",
+    "lat": 37.2741,
+    "lng": -95.7032,
+    "postal": "A1",
+    "enabledDefault": true
+  },
+  {
+    "id": "st-oak-1",
+    "name": "Oak Avenue",
+    "type": "street",
+    "lat": 37.2715,
+    "lng": -95.7111,
+    "postal": "A2",
+    "enabledDefault": true
+  },
+  {
+    "id": "st-pine-1",
+    "name": "Pine Drive",
+    "type": "street",
+    "lat": 37.2684,
+    "lng": -95.6983,
+    "postal": "A3",
+    "enabledDefault": true
+  },
+  {
+    "id": "st-maple-1",
+    "name": "Maple Road",
+    "type": "street",
+    "lat": 37.2811,
+    "lng": -95.6904,
+    "postal": "A4",
+    "enabledDefault": true
+  },
+  {
+    "id": "st-river-1",
+    "name": "Riverfront Blvd",
+    "type": "street",
+    "lat": 37.2604,
+    "lng": -95.7201,
+    "postal": "A5",
+    "enabledDefault": true
+  },
+  {
+    "id": "st-civic-1",
+    "name": "Civic Parkway",
+    "type": "street",
+    "lat": 37.2862,
+    "lng": -95.7167,
+    "postal": "B1",
+    "enabledDefault": true
+  },
+  {
+    "id": "st-airfield-1",
+    "name": "Airfield Access Rd",
+    "type": "street",
+    "lat": 37.2956,
+    "lng": -95.7398,
+    "postal": "B2",
+    "enabledDefault": true
+  },
+  {
+    "id": "st-harbor-1",
+    "name": "Harbor Loop",
+    "type": "street",
+    "lat": 37.2528,
+    "lng": -95.6835,
+    "postal": "B3",
+    "enabledDefault": true
+  },
+  {
+    "id": "st-western-1",
+    "name": "Western Arterial",
+    "type": "street",
+    "lat": 37.2448,
+    "lng": -95.7339,
+    "postal": "B4",
+    "enabledDefault": true
+  },
+  {
+    "id": "st-eastern-1",
+    "name": "Eastern Connector",
+    "type": "street",
+    "lat": 37.2476,
+    "lng": -95.6724,
+    "postal": "B5",
+    "enabledDefault": true
+  },
+
+  {
+    "id": "b-pd",
+    "name": "Police Headquarters",
+    "type": "building",
+    "lat": 37.2736,
+    "lng": -95.7078,
+    "postal": "PD-01",
+    "enabledDefault": true
+  },
+  {
+    "id": "b-sheriff",
+    "name": "Sheriff Substation",
+    "type": "building",
+    "lat": 37.2597,
+    "lng": -95.7196,
+    "postal": "PD-02",
+    "enabledDefault": true
+  },
+  {
+    "id": "b-fire",
+    "name": "Central Fire Station",
+    "type": "building",
+    "lat": 37.2708,
+    "lng": -95.6949,
+    "postal": "FD-01",
+    "enabledDefault": true
+  },
+  {
+    "id": "b-ems",
+    "name": "EMS Response Center",
+    "type": "building",
+    "lat": 37.2818,
+    "lng": -95.7015,
+    "postal": "EMS-01",
+    "enabledDefault": true
+  },
+  {
+    "id": "b-hospital",
+    "name": "County Medical",
+    "type": "building",
+    "lat": 37.2868,
+    "lng": -95.6898,
+    "postal": "MED-04",
+    "enabledDefault": true
+  },
+  {
+    "id": "b-courthouse",
+    "name": "County Courthouse",
+    "type": "building",
+    "lat": 37.2764,
+    "lng": -95.6991,
+    "postal": "GOV-01",
+    "enabledDefault": true
+  },
+  {
+    "id": "b-cityhall",
+    "name": "City Hall",
+    "type": "building",
+    "lat": 37.2749,
+    "lng": -95.6957,
+    "postal": "GOV-02",
+    "enabledDefault": true
+  },
+  {
+    "id": "b-jail",
+    "name": "Detention Facility",
+    "type": "building",
+    "lat": 37.2661,
+    "lng": -95.7084,
+    "postal": "GOV-03",
+    "enabledDefault": true
+  },
+  {
+    "id": "b-airport",
+    "name": "Regional Airfield",
+    "type": "building",
+    "lat": 37.2969,
+    "lng": -95.7412,
+    "postal": "AIR-01",
+    "enabledDefault": true
+  },
+  {
+    "id": "b-port",
+    "name": "River Port Terminal",
+    "type": "building",
+    "lat": 37.2531,
+    "lng": -95.6822,
+    "postal": "PORT-01",
+    "enabledDefault": true
+  },
+  {
+    "id": "b-school",
+    "name": "North Valley High",
+    "type": "building",
+    "lat": 37.2882,
+    "lng": -95.7125,
+    "postal": "EDU-01",
+    "enabledDefault": true
+  },
+  {
+    "id": "b-bank",
+    "name": "First County Bank",
+    "type": "building",
+    "lat": 37.2718,
+    "lng": -95.7012,
+    "postal": "COM-12",
+    "enabledDefault": true
+  },
+  {
+    "id": "b-mall",
+    "name": "Grand Oaks Mall",
+    "type": "building",
+    "lat": 37.2614,
+    "lng": -95.6954,
+    "postal": "COM-22",
+    "enabledDefault": true
+  },
+  {
+    "id": "b-depot",
+    "name": "Transit Depot",
+    "type": "building",
+    "lat": 37.2681,
+    "lng": -95.6867,
+    "postal": "TRN-03",
+    "enabledDefault": true
+  },
+  {
+    "id": "b-power",
+    "name": "Power Substation",
+    "type": "building",
+    "lat": 37.2453,
+    "lng": -95.7248,
+    "postal": "INF-07",
+    "enabledDefault": true
+  },
+
+  {
+    "id": "l-downtown",
+    "name": "Downtown Core",
+    "type": "landmark",
+    "lat": 37.2745,
+    "lng": -95.7003,
+    "postal": "L1",
+    "enabledDefault": true
+  },
+  {
+    "id": "l-waterfront",
+    "name": "Waterfront Promenade",
+    "type": "landmark",
+    "lat": 37.2556,
+    "lng": -95.6844,
+    "postal": "L2",
+    "enabledDefault": true
+  },
+  {
+    "id": "l-industrial",
+    "name": "Industrial Yard",
+    "type": "landmark",
+    "lat": 37.2489,
+    "lng": -95.7271,
+    "postal": "L3",
+    "enabledDefault": true
+  },
+  {
+    "id": "l-courtyard",
+    "name": "Civic Courtyard",
+    "type": "landmark",
+    "lat": 37.2767,
+    "lng": -95.6965,
+    "postal": "L4",
+    "enabledDefault": true
+  },
+  {
+    "id": "l-ridge",
+    "name": "Ridge Overlook",
+    "type": "landmark",
+    "lat": 37.2982,
+    "lng": -95.7082,
+    "postal": "L5",
+    "enabledDefault": true
+  },
+  {
+    "id": "l-marina",
+    "name": "Harbor Marina",
+    "type": "landmark",
+    "lat": 37.2517,
+    "lng": -95.6808,
+    "postal": "L6",
+    "enabledDefault": true
+  },
+  {
+    "id": "l-quarry",
+    "name": "Old Quarry",
+    "type": "landmark",
+    "lat": 37.2382,
+    "lng": -95.7434,
+    "postal": "L7",
+    "enabledDefault": true
+  },
+  {
+    "id": "l-dam",
+    "name": "North Dam",
+    "type": "landmark",
+    "lat": 37.3041,
+    "lng": -95.7321,
+    "postal": "L8",
+    "enabledDefault": true
+  },
+  {
+    "id": "l-park",
+    "name": "Evergreen Park",
+    "type": "landmark",
+    "lat": 37.2809,
+    "lng": -95.7198,
+    "postal": "L9",
+    "enabledDefault": true
+  },
+  {
+    "id": "l-stadium",
+    "name": "Civic Stadium",
+    "type": "landmark",
+    "lat": 37.2652,
+    "lng": -95.6881,
+    "postal": "L10",
+    "enabledDefault": true
+  },
+  {
+    "id": "l-campus",
+    "name": "Community College Campus",
+    "type": "landmark",
+    "lat": 37.2911,
+    "lng": -95.6833,
+    "postal": "L11",
+    "enabledDefault": true
+  },
+  {
+    "id": "l-island",
+    "name": "Delta Island",
+    "type": "landmark",
+    "lat": 37.2426,
+    "lng": -95.6762,
+    "postal": "L12",
+    "enabledDefault": true
+  },
+  {
+    "id": "l-canyon",
+    "name": "Granite Cut",
+    "type": "landmark",
+    "lat": 37.2338,
+    "lng": -95.7145,
+    "postal": "L13",
+    "enabledDefault": true
+  },
+  {
+    "id": "l-yard",
+    "name": "Rail Yard",
+    "type": "landmark",
+    "lat": 37.2636,
+    "lng": -95.7311,
+    "postal": "L14",
+    "enabledDefault": true
+  },
+  {
+    "id": "l-oldtown",
+    "name": "Old Town District",
+    "type": "landmark",
+    "lat": 37.2696,
+    "lng": -95.7059,
+    "postal": "L15",
+    "enabledDefault": true
+  }
+]
