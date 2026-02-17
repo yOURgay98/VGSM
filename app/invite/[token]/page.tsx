@@ -18,9 +18,19 @@ export default async function InviteRedeemPage({ params }: { params: Promise<{ t
     ? await prisma.user.findUnique({ where: { id: sessionUser.id }, select: { id: true } })
     : null;
 
+  const now = new Date();
   const revoked = Boolean(invite?.revokedAt);
-  const expired = !invite || (invite.expiresAt ? invite.expiresAt < new Date() : false);
-  const exhausted = invite ? invite.uses >= invite.maxUses : false;
+  const expired = Boolean(invite?.expiresAt && invite.expiresAt < now);
+  const exhausted = Boolean(invite && invite.uses >= invite.maxUses);
+  const invalidReason = !invite
+    ? "not_found"
+    : revoked
+      ? "revoked"
+      : expired
+        ? "expired"
+        : exhausted
+          ? "exhausted"
+          : null;
   const security = invite ? await getSecuritySettings(invite.communityId) : null;
   const requireBetaKey = Boolean(security?.betaAccessEnabled);
 
@@ -36,15 +46,27 @@ export default async function InviteRedeemPage({ params }: { params: Promise<{ t
           Redeem Invite
         </h1>
 
-        {!invite || revoked || expired || exhausted ? (
+        {invalidReason ? (
           <div className="mt-4 rounded-[var(--radius-panel)] border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-700 dark:text-rose-300">
             <p className="font-medium">This invite is not valid.</p>
-            <p className="mt-1">It may be expired, exhausted, or revoked.</p>
+            <p className="mt-1">
+              {invalidReason === "not_found"
+                ? "The token could not be found. Make sure you copied the full invite link (not the preview token)."
+                : invalidReason === "revoked"
+                  ? "This invite was revoked by staff."
+                  : invalidReason === "expired"
+                    ? "This invite has expired."
+                    : "This invite has already been used up."}
+            </p>
+            <p className="mt-2 text-xs text-rose-700/80 dark:text-rose-300/80">
+              Tip: the token preview shown in the Invites table cannot be redeemed. If you lost the
+              original invite link, create a new invite.
+            </p>
             <Link href="/login" className="mt-3 inline-block text-[var(--accent)] hover:underline">
               Return to login
             </Link>
           </div>
-        ) : (
+        ) : invite ? (
           <>
             <div className="mt-4 rounded-[var(--radius-panel)] border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-3 text-xs text-[color:var(--text-muted)]">
               <p>Community: {invite.community.name}</p>
@@ -93,7 +115,7 @@ export default async function InviteRedeemPage({ params }: { params: Promise<{ t
               </Link>
             </p>
           </>
-        )}
+        ) : null}
       </section>
     </main>
   );

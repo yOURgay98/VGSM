@@ -22,6 +22,25 @@ interface MutationResult {
   data?: Record<string, unknown>;
 }
 
+function firstHeaderValue(value: string | null) {
+  if (!value) return null;
+  const first = value.split(",")[0];
+  return first ? first.trim() : null;
+}
+
+function requestOriginFromHeaders(requestHeaders: Headers) {
+  const forwardedProto = firstHeaderValue(requestHeaders.get("x-forwarded-proto"));
+  const forwardedHost = firstHeaderValue(requestHeaders.get("x-forwarded-host"));
+  const host = forwardedHost ?? requestHeaders.get("host");
+  const proto = forwardedProto ?? "https";
+  if (host) {
+    return `${proto}://${host}`;
+  }
+
+  // Fallbacks for non-request contexts.
+  return process.env.NEXT_PUBLIC_APP_URL ?? process.env.NEXTAUTH_URL ?? "http://localhost:3000";
+}
+
 export async function createInviteAction(
   _prevState: MutationResult,
   formData: FormData,
@@ -66,7 +85,7 @@ export async function createInviteAction(
     message: "Invite created.",
     data: {
       token: invite.token,
-      inviteUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/invite/${invite.token}`,
+      inviteUrl: `${requestOriginFromHeaders(requestHeaders)}/invite/${invite.token}`,
     },
   };
 }
