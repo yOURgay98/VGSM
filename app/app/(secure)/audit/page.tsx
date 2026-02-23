@@ -11,6 +11,7 @@ import { prisma } from "@/lib/db";
 import { listAuditLogs } from "@/lib/services/audit-viewer";
 import { requirePermission } from "@/lib/services/auth";
 import { Permission } from "@/lib/security/permissions";
+import { ROLE_PRIORITY } from "@/lib/permissions";
 import { formatDateTime } from "@/lib/utils";
 
 export default async function AuditPage({
@@ -68,6 +69,21 @@ export default async function AuditPage({
               </span>
             ) : null}
           </p>
+          {actor.membership.role.priority >= ROLE_PRIORITY.ADMIN ? (
+            <a
+              href={(() => {
+                const exportParams = new URLSearchParams();
+                if (userId) exportParams.set("userId", userId);
+                if (eventType) exportParams.set("eventType", eventType);
+                if (typeof params.from === "string" && params.from) exportParams.set("from", params.from);
+                if (typeof params.to === "string" && params.to) exportParams.set("to", params.to);
+                return `/api/audit/export?${exportParams.toString()}`;
+              })()}
+              className="ui-transition rounded-[var(--radius-control)] border border-[color:var(--border)] bg-[color:var(--surface-strong)] px-2.5 py-1 text-[12px] font-medium text-[color:var(--text-main)] hover:bg-black/[0.03] dark:hover:bg-white/[0.06]"
+            >
+              Export CSV
+            </a>
+          ) : null}
         </div>
         <form className="mb-2 grid gap-3 md:grid-cols-4">
           <div>
@@ -157,7 +173,6 @@ export default async function AuditPage({
                 <TableHead>Timestamp</TableHead>
                 <TableHead>User</TableHead>
                 <TableHead>Event</TableHead>
-                <TableHead>IP</TableHead>
                 <TableHead>User Agent</TableHead>
                 <TableHead>Metadata</TableHead>
               </TableRow>
@@ -168,14 +183,22 @@ export default async function AuditPage({
                   <TableCell>{formatDateTime(log.createdAt)}</TableCell>
                   <TableCell>{log.user?.name ?? "System"}</TableCell>
                   <TableCell>{log.eventType}</TableCell>
-                  <TableCell>{log.ip ?? "-"}</TableCell>
                   <TableCell className="max-w-[220px] truncate" title={log.userAgent ?? ""}>
                     {log.userAgent ?? "-"}
                   </TableCell>
                   <TableCell>
-                    <code className="line-clamp-2 max-w-[360px] text-xs">
-                      {log.metadataJson ? JSON.stringify(log.metadataJson) : "-"}
-                    </code>
+                    {log.metadataJson ? (
+                      <details className="max-w-[360px]">
+                        <summary className="cursor-pointer text-xs font-medium text-[var(--accent)]">
+                          View details
+                        </summary>
+                        <pre className="mt-1 max-h-[220px] overflow-auto rounded-[var(--radius-control)] border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-2 text-[11px] leading-relaxed text-[color:var(--text-muted)]">
+                          {JSON.stringify(log.metadataJson, null, 2)}
+                        </pre>
+                      </details>
+                    ) : (
+                      <span className="text-xs text-[color:var(--text-muted)]">-</span>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}

@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/db";
 import { computeAuditHash } from "@/lib/security/audit-hash";
+import { maskIpAddress, sanitizeMetadata, sanitizeUserAgent } from "@/lib/security/privacy";
 
 export const AuditEvent = {
   LOGIN_SUCCESS: "login.success",
@@ -52,6 +53,8 @@ export const AuditEvent = {
   TENANT_VIOLATION: "tenant.violation",
   API_KEY_CREATED: "api_key.created",
   API_KEY_REVOKED: "api_key.revoked",
+  API_KEY_ROTATED: "api_key.rotated",
+  API_KEY_USED: "api_key.used",
   BETA_KEY_CREATED: "beta_key.created",
   BETA_KEY_REDEEMED: "beta_key.redeemed",
   BETA_KEY_REVOKED: "beta_key.revoked",
@@ -61,6 +64,9 @@ export const AuditEvent = {
   DISCORD_UNLINKED: "discord.unlinked",
   DISCORD_CONFIG_UPDATED: "discord.config_updated",
   DISCORD_BOT_COMMAND: "discord.bot.command",
+  ERLC_CONNECTED: "integrations.erlc.connected",
+  ERLC_STATUS_UPDATED: "integrations.erlc.status_updated",
+  ERLC_EVENT_INGESTED: "integrations.erlc.event_ingested",
 } as const;
 
 export type AuditEventType = (typeof AuditEvent)[keyof typeof AuditEvent];
@@ -87,7 +93,9 @@ async function writeAuditLog(client: Prisma.TransactionClient, input: AuditLogIn
   const chainIndex = (last?.chainIndex ?? 0) + 1;
   const prevHash = last?.hash ?? null;
   const createdAt = new Date();
-  const metadata = input.metadata ?? null;
+  const metadata = sanitizeMetadata(input.metadata ?? null) as Prisma.InputJsonValue | null;
+  const maskedIp = maskIpAddress(input.ip ?? null);
+  const sanitizedUserAgent = sanitizeUserAgent(input.userAgent ?? null);
 
   const hash = computeAuditHash({
     prevHash,
@@ -95,8 +103,8 @@ async function writeAuditLog(client: Prisma.TransactionClient, input: AuditLogIn
     communityId: input.communityId ?? null,
     userId: input.userId ?? null,
     eventType: input.eventType,
-    ip: input.ip ?? null,
-    userAgent: input.userAgent ?? null,
+    ip: maskedIp,
+    userAgent: sanitizedUserAgent,
     metadata,
     createdAt,
   });
@@ -109,8 +117,8 @@ async function writeAuditLog(client: Prisma.TransactionClient, input: AuditLogIn
       communityId: input.communityId ?? null,
       userId: input.userId ?? null,
       eventType: input.eventType,
-      ip: input.ip ?? null,
-      userAgent: input.userAgent ?? null,
+      ip: maskedIp,
+      userAgent: sanitizedUserAgent,
       metadataJson: metadata ?? undefined,
       createdAt,
     },

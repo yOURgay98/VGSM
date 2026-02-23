@@ -16,6 +16,7 @@ import { Permission } from "@/lib/security/permissions";
 import { requirePermission } from "@/lib/services/auth";
 import { getSecurityDashboardMetrics } from "@/lib/services/security-dashboard";
 import { listSecurityEvents } from "@/lib/services/security-events";
+import { maskIpAddress, sanitizeMetadata } from "@/lib/security/privacy";
 import { formatDateTime } from "@/lib/utils";
 
 export default async function SecurityDashboardPage({
@@ -195,7 +196,7 @@ export default async function SecurityDashboardPage({
                       <Badge variant="default">{e.severity}</Badge>
                     </TableCell>
                     <TableCell className="text-[color:var(--text-muted)]">
-                      {(e.metadata as any)?.ip ?? "-"}
+                      {maskIpAddress((e.metadata as any)?.ip ?? null) ?? "-"}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -280,9 +281,9 @@ export default async function SecurityDashboardPage({
                     </TableCell>
                     <TableCell
                       className="max-w-[420px] truncate text-[color:var(--text-muted)]"
-                      title={JSON.stringify(e.metadata ?? {})}
+                      title={JSON.stringify(sanitizeMetadata(e.metadata ?? {}))}
                     >
-                      {e.metadata ? JSON.stringify(e.metadata) : "-"}
+                      {e.metadata ? JSON.stringify(sanitizeMetadata(e.metadata)) : "-"}
                     </TableCell>
                   </TableRow>
                 ))

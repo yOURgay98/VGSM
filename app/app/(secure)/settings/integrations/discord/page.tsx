@@ -10,7 +10,7 @@ import { DiscordBotApiKeysPanel } from "@/components/integrations/discord/discor
 import { unlinkDiscordAction } from "@/app/actions/discord-actions";
 
 export default async function DiscordIntegrationPage() {
-  const actor = await requirePermission(Permission.PLAYERS_READ);
+  const actor = await requirePermission(Permission.SETTINGS_EDIT);
 
   const canEditConfig = actor.permissions.includes(Permission.SETTINGS_EDIT);
   const canManageKeys = actor.permissions.includes(Permission.API_KEYS_MANAGE);

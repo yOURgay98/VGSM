@@ -951,6 +951,7 @@ model ApiKey {
   keyHash         String    @unique
   permissionsJson Json
   createdAt       DateTime  @default(now())
+  lastUsedAt      DateTime?
   revokedAt       DateTime?
   createdByUserId String?
 

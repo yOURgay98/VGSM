@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { clampTake } from "@/lib/db/pagination";
 import { computeAuditHash } from "@/lib/security/audit-hash";
+import { maskIpAddress, sanitizeMetadata, sanitizeUserAgent } from "@/lib/security/privacy";
 
 interface AuditFilter {
   userId?: string;
@@ -47,10 +48,16 @@ export async function listAuditLogs(input: {
     ...(input.cursor ? { cursor: { chainIndex: input.cursor }, skip: 1 } : {}),
   });
 
-  const logs = rows.slice(0, take);
-  const nextCursor = rows.length > take ? (logs[logs.length - 1]?.chainIndex ?? null) : null;
+  const rawLogs = rows.slice(0, take);
+  const nextCursor = rows.length > take ? (rawLogs[rawLogs.length - 1]?.chainIndex ?? null) : null;
 
-  const integrity = verifyAuditIntegrity(logs);
+  const integrity = verifyAuditIntegrity(rawLogs);
+  const logs = rawLogs.map((log) => ({
+    ...log,
+    ip: maskIpAddress(log.ip),
+    userAgent: sanitizeUserAgent(log.userAgent),
+    metadataJson: sanitizeMetadata(log.metadataJson),
+  }));
 
   return { logs, integrity, nextCursor: nextCursor ? String(nextCursor) : null };
 }

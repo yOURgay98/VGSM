@@ -28,15 +28,36 @@ import {
   Ticket,
   Gavel,
   Server,
+  Sparkles,
+  BellRing,
+  LayoutTemplate,
+  Scale,
+  Archive,
+  Briefcase,
+  Brain,
+  Eye,
+  TrendingUp,
+  Cpu,
+  Webhook,
+  FlaskConical,
+  IdCard,
+  GraduationCap,
+  BarChart3,
+  ListChecks,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import type { Permission } from "@/lib/security/permissions";
+import { ROLE_PRIORITY } from "@/lib/permissions";
 
 type NavItem = {
   href: string;
   label: string;
   icon: LucideIcon;
   isActive: (pathname: string, scope: string | null) => boolean;
+  requiredPermission?: Permission;
+  minRolePriority?: number;
+  badge?: string;
 };
 
 type NavGroup = {
@@ -87,13 +108,28 @@ const navGroups: NavGroup[] = [
         label: "Dashboard",
         icon: Shield,
         isActive: (p) => isPath(p, "/app/dashboard"),
+        requiredPermission: "players:read",
       },
-      { href: "/app/inbox", label: "Inbox", icon: Inbox, isActive: (p) => isPath(p, "/app/inbox") },
+      {
+        href: "/app/inbox",
+        label: "Inbox",
+        icon: Inbox,
+        isActive: (p) => isPath(p, "/app/inbox"),
+        requiredPermission: "reports:triage",
+      },
       {
         href: "/app/control",
         label: "Control",
         icon: AppWindowMac,
         isActive: (p) => isPath(p, "/app/control"),
+        requiredPermission: "commands:run",
+      },
+      {
+        href: "/app/demo-checklist",
+        label: "Demo Checklist",
+        icon: ListChecks,
+        isActive: (p) => isPath(p, "/app/demo-checklist"),
+        minRolePriority: ROLE_PRIORITY.OWNER,
       },
     ],
   },
@@ -106,42 +142,49 @@ const navGroups: NavGroup[] = [
         label: "Moderation Desk",
         icon: ClipboardList,
         isActive: (p) => isPath(p, "/app/moderation"),
+        requiredPermission: "reports:read",
       },
       {
         href: "/app/players",
         label: "Players",
         icon: Users,
         isActive: (p) => startsWithPath(p, "/app/players"),
+        requiredPermission: "players:read",
       },
       {
         href: "/app/reports",
         label: "Reports",
         icon: Flag,
         isActive: (p) => isPath(p, "/app/reports"),
+        requiredPermission: "reports:read",
       },
       {
         href: "/app/cases",
         label: "Cases",
         icon: FolderKanban,
         isActive: (p) => startsWithPath(p, "/app/cases"),
+        requiredPermission: "cases:read",
       },
       {
         href: "/app/actions?scope=bans",
         label: "Bans",
         icon: Ban,
         isActive: (p, s) => isPath(p, "/app/actions") && s === "bans",
+        requiredPermission: "bans:create",
       },
       {
         href: "/app/actions",
         label: "Actions",
         icon: Gavel,
         isActive: (p, s) => isPath(p, "/app/actions") && s !== "bans",
+        requiredPermission: "actions:create",
       },
       {
         href: "/app/commands",
         label: "Commands",
         icon: Command,
         isActive: (p) => isPath(p, "/app/commands"),
+        requiredPermission: "commands:run",
       },
     ],
   },
@@ -154,12 +197,14 @@ const navGroups: NavGroup[] = [
         label: "Dispatch",
         icon: Radio,
         isActive: (p) => startsWithPath(p, "/app/dispatch"),
+        requiredPermission: "dispatch:read",
       },
       {
         href: "/app/analytics",
         label: "Analytics",
         icon: Activity,
         isActive: (p) => isPath(p, "/app/analytics"),
+        requiredPermission: "players:read",
       },
     ],
   },
@@ -172,18 +217,21 @@ const navGroups: NavGroup[] = [
         label: "SOC",
         icon: ShieldCheck,
         isActive: (p) => isPath(p, "/app/security"),
+        requiredPermission: "security:read",
       },
       {
         href: "/app/audit",
         label: "Audit",
         icon: ScrollText,
         isActive: (p) => isPath(p, "/app/audit"),
+        requiredPermission: "audit:read",
       },
       {
         href: "/app/status",
         label: "Status",
         icon: Server,
         isActive: (p) => isPath(p, "/app/status"),
+        requiredPermission: "security:read",
       },
     ],
   },
@@ -197,24 +245,28 @@ const navGroups: NavGroup[] = [
         label: "Settings",
         icon: Settings,
         isActive: (p) => isPath(p, "/app/settings"),
+        requiredPermission: "settings:edit",
       },
       {
         href: "/app/settings/roles",
         label: "Roles",
         icon: UserCog,
         isActive: (p) => startsWithPath(p, "/app/settings/roles"),
+        requiredPermission: "users:edit_role",
       },
       {
         href: "/app/settings/invites",
         label: "Invites",
         icon: Ticket,
         isActive: (p) => startsWithPath(p, "/app/settings/invites"),
+        requiredPermission: "users:invite",
       },
       {
-        href: "/app/settings/integrations/discord",
+        href: "/app/settings/integrations",
         label: "Integrations",
         icon: Plug,
         isActive: (p) => startsWithPath(p, "/app/settings/integrations"),
+        requiredPermission: "settings:edit",
       },
       ...(process.env.NODE_ENV !== "production"
         ? [
@@ -223,14 +275,174 @@ const navGroups: NavGroup[] = [
               label: "Diagnostics",
               icon: Activity,
               isActive: (p: string) => startsWithPath(p, "/app/dev/diagnostics"),
+              requiredPermission: "audit:read" as Permission,
+              minRolePriority: ROLE_PRIORITY.OWNER,
             },
           ]
         : []),
     ],
   },
+  {
+    id: "platform",
+    label: "Platform",
+    defaultCollapsed: true,
+    items: [
+      {
+        href: "/app/platform/automation",
+        label: "Automation",
+        icon: Sparkles,
+        isActive: (p) => startsWithPath(p, "/app/platform/automation"),
+        requiredPermission: "players:read",
+        badge: "Soon",
+      },
+      {
+        href: "/app/platform/notifications",
+        label: "Notifications",
+        icon: BellRing,
+        isActive: (p) => startsWithPath(p, "/app/platform/notifications"),
+        requiredPermission: "players:read",
+        badge: "Stub",
+      },
+      {
+        href: "/app/platform/templates",
+        label: "Templates",
+        icon: LayoutTemplate,
+        isActive: (p) => startsWithPath(p, "/app/platform/templates"),
+        requiredPermission: "players:read",
+        badge: "Soon",
+      },
+    ],
+  },
+  {
+    id: "compliance",
+    label: "Compliance",
+    defaultCollapsed: true,
+    items: [
+      {
+        href: "/app/compliance/data-policy",
+        label: "Data Policy",
+        icon: Scale,
+        isActive: (p) => startsWithPath(p, "/app/compliance/data-policy"),
+        requiredPermission: "security:read",
+      },
+      {
+        href: "/app/compliance/retention",
+        label: "Retention",
+        icon: Archive,
+        isActive: (p) => startsWithPath(p, "/app/compliance/retention"),
+        requiredPermission: "security:read",
+        badge: "Soon",
+      },
+      {
+        href: "/app/compliance/evidence-locker",
+        label: "Evidence Locker",
+        icon: Briefcase,
+        isActive: (p) => startsWithPath(p, "/app/compliance/evidence-locker"),
+        requiredPermission: "security:read",
+        badge: "Soon",
+      },
+    ],
+  },
+  {
+    id: "intelligence",
+    label: "Intelligence",
+    defaultCollapsed: true,
+    items: [
+      {
+        href: "/app/intelligence/risk-scoring",
+        label: "Risk Scoring",
+        icon: Brain,
+        isActive: (p) => startsWithPath(p, "/app/intelligence/risk-scoring"),
+        requiredPermission: "security:read",
+        badge: "Soon",
+      },
+      {
+        href: "/app/intelligence/watchlist",
+        label: "Watchlist",
+        icon: Eye,
+        isActive: (p) => startsWithPath(p, "/app/intelligence/watchlist"),
+        requiredPermission: "security:read",
+        badge: "Soon",
+      },
+      {
+        href: "/app/intelligence/trends",
+        label: "Trends",
+        icon: TrendingUp,
+        isActive: (p) => startsWithPath(p, "/app/intelligence/trends"),
+        requiredPermission: "security:read",
+        badge: "Soon",
+      },
+    ],
+  },
+  {
+    id: "developer",
+    label: "Developer",
+    defaultCollapsed: true,
+    items: [
+      {
+        href: "/app/developer/api-keys",
+        label: "API Keys",
+        icon: Cpu,
+        isActive: (p) => startsWithPath(p, "/app/developer/api-keys"),
+        requiredPermission: "api_keys:manage",
+      },
+      {
+        href: "/app/developer/webhooks",
+        label: "Webhooks",
+        icon: Webhook,
+        isActive: (p) => startsWithPath(p, "/app/developer/webhooks"),
+        requiredPermission: "api_keys:manage",
+        badge: "Soon",
+      },
+      {
+        href: "/app/developer/sandbox",
+        label: "Sandbox",
+        icon: FlaskConical,
+        isActive: (p) => startsWithPath(p, "/app/developer/sandbox"),
+        requiredPermission: "api_keys:manage",
+      },
+    ],
+  },
+  {
+    id: "people",
+    label: "People",
+    defaultCollapsed: true,
+    items: [
+      {
+        href: "/app/people/staff-directory",
+        label: "Staff Directory",
+        icon: IdCard,
+        isActive: (p) => startsWithPath(p, "/app/people/staff-directory"),
+        requiredPermission: "players:read",
+        badge: "Soon",
+      },
+      {
+        href: "/app/people/training-logs",
+        label: "Training Logs",
+        icon: GraduationCap,
+        isActive: (p) => startsWithPath(p, "/app/people/training-logs"),
+        requiredPermission: "players:read",
+        badge: "Soon",
+      },
+      {
+        href: "/app/people/performance",
+        label: "Performance",
+        icon: BarChart3,
+        isActive: (p) => startsWithPath(p, "/app/people/performance"),
+        requiredPermission: "players:read",
+        badge: "Soon",
+      },
+    ],
+  },
 ];
 
-export function Sidebar() {
+export function Sidebar({
+  permissions,
+  rolePriority,
+}: {
+  permissions: readonly Permission[];
+  rolePriority: number;
+}) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const scope = searchParams.get("scope");
@@ -281,6 +493,22 @@ export function Sidebar() {
   }, [collapsed]);
 
   const asideWidth = compact ? "w-[72px]" : "w-[224px]";
+  const visibleGroups = useMemo(() => {
+    return navGroups
+      .map((group) => ({
+        ...group,
+        items: group.items.filter((item) => {
+          if (item.requiredPermission && !permissions.includes(item.requiredPermission)) {
+            return false;
+          }
+          if (item.minRolePriority && rolePriority < item.minRolePriority) {
+            return false;
+          }
+          return true;
+        }),
+      }))
+      .filter((group) => group.items.length > 0);
+  }, [permissions, rolePriority]);
 
   const header = useMemo(() => {
     return (
@@ -322,7 +550,7 @@ export function Sidebar() {
       {header}
 
       <nav aria-label="Primary" className={cn("space-y-3", compact && "space-y-2")}>
-        {navGroups.map((group) => {
+        {visibleGroups.map((group) => {
           const isCollapsed = Boolean(collapsed[group.id]);
 
           return (
@@ -391,6 +619,11 @@ export function Sidebar() {
                           )}
                           <Icon className="h-4 w-4 shrink-0" />
                           <span className={cn("truncate", compact && "sr-only")}>{item.label}</span>
+                          {item.badge && !compact ? (
+                            <span className="ml-auto rounded-full border border-[color:var(--border)] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.06em] text-[color:var(--text-muted)]">
+                              {item.badge}
+                            </span>
+                          ) : null}
                         </Link>
                       );
                     })}

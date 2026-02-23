@@ -6,6 +6,7 @@ import { safeInternalRedirect } from "@/lib/auth/safe-redirect";
 import { absoluteUrl } from "@/lib/http/request-url";
 import { loginSchema } from "@/lib/validations/auth";
 import { verifyCredentialsLogin } from "@/lib/services/credentials-login";
+import { maskIpAddress, sanitizeUserAgent } from "@/lib/security/privacy";
 
 const SESSION_MAX_AGE_DAYS = 30;
 
@@ -24,11 +25,12 @@ function sessionCookieName() {
 }
 
 function getRequestMeta(request: Request) {
-  const ip =
+  const ipRaw =
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
     request.headers.get("x-real-ip") ??
     null;
-  const userAgent = request.headers.get("user-agent") ?? null;
+  const ip = maskIpAddress(ipRaw);
+  const userAgent = sanitizeUserAgent(request.headers.get("user-agent") ?? null);
   return { ip, userAgent };
 }
 

@@ -3,6 +3,7 @@ import { Prisma, Role } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { createAuditLog, AuditEvent } from "@/lib/services/audit";
 import { getSecuritySettings } from "@/lib/services/security-settings";
+import { sanitizeMetadata } from "@/lib/security/privacy";
 
 export type SecurityEventSeverity = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
 
@@ -89,13 +90,15 @@ export async function createSecurityEvent(input: {
   eventType: string;
   metadata?: Prisma.InputJsonValue | null;
 }) {
+  const metadata = sanitizeMetadata(input.metadata ?? null) as Prisma.InputJsonValue | null;
+
   const created = await prisma.securityEvent.create({
     data: {
       communityId: input.communityId ?? null,
       userId: input.userId ?? null,
       severity: input.severity,
       eventType: input.eventType,
-      metadata: input.metadata ?? undefined,
+      metadata: metadata ?? undefined,
     },
     select: {
       id: true,
@@ -114,7 +117,7 @@ export async function createSecurityEvent(input: {
       userId: created.userId,
       severity: created.severity as SecurityEventSeverity,
       eventType: created.eventType,
-      metadata: (created.metadata ?? null) as unknown as Prisma.InputJsonValue | null,
+      metadata: (created.metadata ?? null) as Prisma.InputJsonValue | null,
     });
   }
 

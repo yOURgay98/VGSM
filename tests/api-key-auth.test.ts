@@ -4,7 +4,15 @@ vi.mock("@/lib/db", () => ({
   prisma: {
     apiKey: {
       findUnique: vi.fn(),
+      updateMany: vi.fn(),
     },
+  },
+}));
+
+vi.mock("@/lib/services/audit", () => ({
+  createAuditLog: vi.fn().mockResolvedValue(undefined),
+  AuditEvent: {
+    API_KEY_USED: "api_key.used",
   },
 }));
 
@@ -15,6 +23,8 @@ import { ApiKeyAuthError, requireApiKeyFromRequest } from "@/lib/services/api-ke
 describe("API key auth", () => {
   beforeEach(() => {
     (prisma.apiKey.findUnique as any).mockReset();
+    (prisma.apiKey.updateMany as any).mockReset();
+    (prisma.apiKey.updateMany as any).mockResolvedValue({ count: 1 });
   });
 
   it("rejects missing key", async () => {
@@ -47,6 +57,7 @@ describe("API key auth", () => {
         communityId: true,
         name: true,
         revokedAt: true,
+        lastUsedAt: true,
         permissionsJson: true,
       },
     });
@@ -85,6 +96,9 @@ describe("API key auth", () => {
       communityId: "c1",
       name: "bot",
       permissions: ["approvals:decide", "dispatch:read"],
+    });
+    expect((prisma.apiKey.updateMany as any).mock.calls[0][0]).toMatchObject({
+      where: { id: "k1", revokedAt: null },
     });
   });
 });

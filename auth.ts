@@ -16,6 +16,7 @@ import { decryptString } from "@/lib/security/encryption";
 import { verifyTotp } from "@/lib/security/totp";
 import { consumeBackupCode } from "@/lib/services/two-factor";
 import { upsertDiscordAccount } from "@/lib/services/discord";
+import { maskIpAddress, sanitizeUserAgent } from "@/lib/security/privacy";
 
 const AUTH_SECRET = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
 assertServerEnv();
@@ -85,18 +86,19 @@ const providers: Provider[] = [
       const parsed = loginSchema.safeParse(credentials);
       const dbAvailable = Date.now() >= authDatabaseUnavailableUntil;
 
-      const ip =
+      const rawIp =
         request?.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
         request?.headers.get("x-real-ip") ??
         null;
-      const userAgent = request?.headers.get("user-agent") ?? null;
+      const safeIp = maskIpAddress(rawIp);
+      const safeUserAgent = sanitizeUserAgent(request?.headers.get("user-agent") ?? null);
 
       if (!parsed.success) {
         if (dbAvailable) {
           await createAuditLog({
             eventType: AuditEvent.LOGIN_FAILED,
-            ip,
-            userAgent,
+            ip: safeIp,
+            userAgent: safeUserAgent,
             metadata: { reason: "invalid_payload" },
           });
         }
@@ -104,7 +106,7 @@ const providers: Provider[] = [
       }
 
       const { email, password, twoFactorCode } = parsed.data;
-      const identifier = `${ip ?? "unknown"}:${email}`;
+      const identifier = `${safeIp ?? "unknown"}:${email}`;
       const rateLimit = shouldEnforceLoginRateLimit
         ? loginRateLimiter.check(identifier)
         : { allowed: true, remaining: Number.POSITIVE_INFINITY };
@@ -115,14 +117,14 @@ const providers: Provider[] = [
             data: {
               email,
               success: false,
-              ip,
-              userAgent,
+              ip: safeIp,
+              userAgent: safeUserAgent,
             },
           });
           await createAuditLog({
             eventType: AuditEvent.LOGIN_FAILED,
-            ip,
-            userAgent,
+            ip: safeIp,
+            userAgent: safeUserAgent,
             metadata: { email, reason: "rate_limited" },
           });
         }
@@ -146,14 +148,14 @@ const providers: Provider[] = [
           data: {
             email,
             success: false,
-            ip,
-            userAgent,
+            ip: safeIp,
+            userAgent: safeUserAgent,
           },
         });
         await createAuditLog({
           eventType: AuditEvent.LOGIN_FAILED,
-          ip,
-          userAgent,
+          ip: safeIp,
+          userAgent: safeUserAgent,
           metadata: { email, reason: "user_not_found" },
         });
         throw new InvalidCredentialsError();
@@ -165,15 +167,15 @@ const providers: Provider[] = [
             email,
             userId: user.id,
             success: false,
-            ip,
-            userAgent,
+            ip: safeIp,
+            userAgent: safeUserAgent,
           },
         });
         await createAuditLog({
           userId: user.id,
           eventType: AuditEvent.LOGIN_FAILED,
-          ip,
-          userAgent,
+          ip: safeIp,
+          userAgent: safeUserAgent,
           metadata: { email, reason: "disabled" },
         });
         throw new DisabledError();
@@ -185,15 +187,15 @@ const providers: Provider[] = [
             email,
             userId: user.id,
             success: false,
-            ip,
-            userAgent,
+            ip: safeIp,
+            userAgent: safeUserAgent,
           },
         });
         await createAuditLog({
           userId: user.id,
           eventType: AuditEvent.LOGIN_FAILED,
-          ip,
-          userAgent,
+          ip: safeIp,
+          userAgent: safeUserAgent,
           metadata: { email, reason: "locked" },
         });
         throw new LockedError();
@@ -210,8 +212,8 @@ const providers: Provider[] = [
             email,
             userId: user.id,
             success: false,
-            ip,
-            userAgent,
+            ip: safeIp,
+            userAgent: safeUserAgent,
           },
         });
 
@@ -235,8 +237,8 @@ const providers: Provider[] = [
         await createAuditLog({
           userId: user.id,
           eventType: AuditEvent.LOGIN_FAILED,
-          ip,
-          userAgent,
+          ip: safeIp,
+          userAgent: safeUserAgent,
           metadata: { email, reason: "invalid_password" },
         });
         if (lockedUntil) {
@@ -250,8 +252,8 @@ const providers: Provider[] = [
           await createAuditLog({
             userId: user.id,
             eventType: AuditEvent.LOGIN_FAILED,
-            ip,
-            userAgent,
+            ip: safeIp,
+            userAgent: safeUserAgent,
             metadata: { email, reason: "2fa_required" },
           });
           throw new TwoFactorRequiredError();
@@ -268,8 +270,8 @@ const providers: Provider[] = [
           const backupOk = await consumeBackupCode({
             userId: user.id,
             rawCode: String(twoFactorCode),
-            ip,
-            userAgent,
+            ip: safeIp,
+            userAgent: safeUserAgent,
           });
 
           if (!backupOk) {
@@ -278,16 +280,16 @@ const providers: Provider[] = [
                 email,
                 userId: user.id,
                 success: false,
-                ip,
-                userAgent,
+                ip: safeIp,
+                userAgent: safeUserAgent,
               },
             });
 
             await createAuditLog({
               userId: user.id,
               eventType: AuditEvent.LOGIN_FAILED,
-              ip,
-              userAgent,
+              ip: safeIp,
+              userAgent: safeUserAgent,
               metadata: { email, reason: "2fa_invalid" },
             });
 
@@ -315,16 +317,16 @@ const providers: Provider[] = [
           email,
           userId: user.id,
           success: true,
-          ip,
-          userAgent,
+          ip: safeIp,
+          userAgent: safeUserAgent,
         },
       });
 
       await createAuditLog({
         userId: user.id,
         eventType: AuditEvent.LOGIN_SUCCESS,
-        ip,
-        userAgent,
+        ip: safeIp,
+        userAgent: safeUserAgent,
       });
 
       return {
@@ -431,3 +433,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
   secret: AUTH_SECRET,
 });
+

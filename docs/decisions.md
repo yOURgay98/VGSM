@@ -181,3 +181,25 @@ This document tracks non-trivial implementation decisions made while evolving ES
 - Auth environment validation is strict at runtime and production-safe, but production **build phase** is warning-only for missing owner/bootstrap vars and bypass flags to avoid blocking local release builds.
 - Stale or invalid auth cookies during page renders now trigger a safe redirect to `/api/auth/clear-session` (then `/`) instead of throwing an uncaught "Authentication required" error in secure pages.
 - Sign-out flow is normalized through `/api/auth/clear-session` to avoid route mismatch/404 regressions and ensure DB session revocation + audit logging.
+
+## 2026-02-23: Audit Privacy + No Raw IP Policy
+
+- VSM no longer stores raw IP addresses in audit records.
+- Audit ingestion now masks network identifiers before hashing/storage (e.g. IPv4 `/24` masking), preserving coarse security signals without retaining exact addresses.
+- Audit metadata is sanitized at write-time and read-time to redact secret-bearing fields (`password`, `token`, `authorization`, cookie-like keys, and key-hash fields).
+- Production error boundaries no longer show stack traces to regular users; debug details are shown only outside production.
+
+## 2026-02-23: Integration Stub Boundary (ERLC)
+
+- Added a real-but-safe ERLC stub boundary:
+  - integration status stored in community settings (`integrations.erlc`),
+  - one-time ingestion token generation via hashed API keys,
+  - event ingestion endpoint at `/api/integrations/erlc/events` using API key auth + rate limiting,
+  - sandbox tooling to emit test events into audit.
+- This intentionally avoids any Roblox process/client injection or non-API coupling.
+
+## 2026-02-23: RBAC-Scoped Navigation
+
+- Sidebar visibility is now permission- and role-priority-aware.
+- Users only see modules they can access; admin/developer surfaces are hidden for lower roles.
+- New feature categories are implemented as controlled shells to prevent click-to-error UX while unfinished modules are staged.

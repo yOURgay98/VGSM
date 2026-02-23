@@ -12,6 +12,7 @@ export default function AppError({
   reset: () => void;
 }) {
   const [copied, setCopied] = useState(false);
+  const canShowDebug = process.env.NODE_ENV !== "production";
 
   const details = useMemo(() => {
     const digest = typeof error.digest === "string" ? error.digest : "";
@@ -46,22 +47,31 @@ export default function AppError({
         <Button variant="primary" size="sm" onClick={() => reset()}>
           Retry
         </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            void navigator.clipboard?.writeText(details);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 1200);
-          }}
-        >
-          {copied ? "Copied" : "Copy details"}
-        </Button>
+        {canShowDebug ? (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              void navigator.clipboard?.writeText(details);
+              setCopied(true);
+              setTimeout(() => setCopied(false), 1200);
+            }}
+          >
+            {copied ? "Copied" : "Copy details"}
+          </Button>
+        ) : null}
       </div>
 
-      <pre className="mt-4 max-h-[280px] overflow-auto rounded-[var(--radius-panel)] border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-3 text-xs text-[color:var(--text-muted)]">
-        {details}
-      </pre>
+      {canShowDebug ? (
+        <pre className="mt-4 max-h-[280px] overflow-auto rounded-[var(--radius-panel)] border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-3 text-xs text-[color:var(--text-muted)]">
+          {details}
+        </pre>
+      ) : (
+        <p className="mt-3 text-xs text-[color:var(--text-muted)]">
+          If this keeps happening, contact your owner/admin and include digest:{" "}
+          {error.digest ?? "n/a"}.
+        </p>
+      )}
     </div>
   );
 }

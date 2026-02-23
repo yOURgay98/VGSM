@@ -61,7 +61,7 @@ export default async function SettingsPage() {
             </Button>
           ) : null}
           <Button asChild variant="outline" size="sm">
-            <Link href="/app/settings/integrations/discord">Discord</Link>
+            <Link href="/app/settings/integrations">Integrations</Link>
           </Button>
         </div>
       </MacWindow>

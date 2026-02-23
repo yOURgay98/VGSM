@@ -63,7 +63,9 @@ export async function listApiKeys(input: { communityId: string }) {
       id: true,
       name: true,
       createdAt: true,
+      lastUsedAt: true,
       revokedAt: true,
+      permissionsJson: true,
       createdByUser: { select: { id: true, name: true, email: true } },
     },
   });
@@ -95,4 +97,53 @@ export async function revokeApiKey(input: {
   });
 
   return { ok: true } as const;
+}
+
+export async function rotateApiKey(input: {
+  communityId: string;
+  actorUserId: string;
+  apiKeyId: string;
+  ip?: string | null;
+  userAgent?: string | null;
+}) {
+  const existing = await prisma.apiKey.findFirst({
+    where: { id: input.apiKeyId, communityId: input.communityId, revokedAt: null },
+    select: { id: true, name: true, permissionsJson: true },
+  });
+
+  if (!existing) {
+    throw new Error("API key not found.");
+  }
+
+  const permissions = normalizeApiKeyPermissions(existing.permissionsJson);
+  const created = await createApiKey({
+    communityId: input.communityId,
+    actorUserId: input.actorUserId,
+    name: existing.name,
+    permissions,
+    ip: input.ip ?? null,
+    userAgent: input.userAgent ?? null,
+  });
+
+  await revokeApiKey({
+    communityId: input.communityId,
+    actorUserId: input.actorUserId,
+    apiKeyId: existing.id,
+    ip: input.ip ?? null,
+    userAgent: input.userAgent ?? null,
+  });
+
+  await createAuditLog({
+    communityId: input.communityId,
+    userId: input.actorUserId,
+    eventType: AuditEvent.API_KEY_ROTATED,
+    ip: input.ip ?? null,
+    userAgent: input.userAgent ?? null,
+    metadata: {
+      previousApiKeyId: existing.id,
+      newApiKeyId: created.id,
+    } as unknown as Prisma.InputJsonValue,
+  });
+
+  return created;
 }

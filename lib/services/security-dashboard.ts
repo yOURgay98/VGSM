@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { ROLE_PRIORITY } from "@/lib/permissions";
+import { maskIpAddress, sanitizeMetadata, sanitizeUserAgent } from "@/lib/security/privacy";
 
 const METRICS_TTL_MS = 10_000;
 
@@ -165,7 +166,7 @@ export async function getSecurityDashboardMetrics(input: {
       createdAt: e.createdAt,
       severity: e.severity,
       user: e.user,
-      metadata: e.metadata,
+      metadata: sanitizeMetadata(e.metadata),
     })),
     staff: {
       total: staffTotal,
@@ -178,7 +179,11 @@ export async function getSecurityDashboardMetrics(input: {
         TRIAL_MOD: roleBuckets.get("TRIAL_MOD") ?? { total: 0, with2fa: 0 },
       },
     },
-    recentFailedAttempts,
+    recentFailedAttempts: recentFailedAttempts.map((attempt) => ({
+      ...attempt,
+      ip: maskIpAddress(attempt.ip),
+      userAgent: sanitizeUserAgent(attempt.userAgent),
+    })),
   };
 
   metricsCache.set(input.communityId, { at: nowMs, value });

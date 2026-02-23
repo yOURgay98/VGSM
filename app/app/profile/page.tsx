@@ -9,6 +9,7 @@ import { getCommunityAuthContext, requireActiveCommunityId } from "@/lib/service
 import { getCurrentSessionToken, listUserSessions } from "@/lib/services/session";
 import { getSecuritySettings } from "@/lib/services/security-settings";
 import { ROLE_PRIORITY } from "@/lib/permissions";
+import { maskIpAddress } from "@/lib/security/privacy";
 import { formatDateTime } from "@/lib/utils";
 
 export default async function ProfilePage({
@@ -84,9 +85,9 @@ export default async function ProfilePage({
 
   const primaryIp =
     (currentSessionToken
-      ? sessions.find((s) => s.sessionToken === currentSessionToken)?.ip
+      ? maskIpAddress(sessions.find((s) => s.sessionToken === currentSessionToken)?.ip)
       : null) ??
-    sessions[0]?.ip ??
+    (maskIpAddress(sessions[0]?.ip) ?? null) ??
     null;
 
   return (
@@ -120,9 +121,9 @@ export default async function ProfilePage({
             createdAtLabel: formatDateTime(s.createdAt),
             lastActiveAtLabel: formatDateTime(s.lastActiveAt),
             expiresAtLabel: formatDateTime(s.expires),
-            ip: s.ip ?? null,
+            ip: maskIpAddress(s.ip) ?? null,
             userAgent: s.userAgent ?? null,
-            unusualIp: Boolean(s.ip && primaryIp && s.ip !== primaryIp),
+            unusualIp: Boolean(maskIpAddress(s.ip) && primaryIp && maskIpAddress(s.ip) !== primaryIp),
           }))}
           actionsEnabled={Boolean(user)}
         />

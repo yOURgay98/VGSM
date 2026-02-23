@@ -9,6 +9,7 @@ import { verifyTotp } from "@/lib/security/totp";
 import { consumeBackupCode } from "@/lib/services/two-factor";
 import { createSecurityEvent } from "@/lib/services/security-events";
 import { bootstrapOwnerIfNeeded } from "@/lib/services/bootstrap-owner";
+import { maskIpAddress, sanitizeUserAgent } from "@/lib/security/privacy";
 
 type LoginCode =
   | "invalid_credentials"
@@ -58,13 +59,15 @@ export async function verifyCredentialsLogin(input: {
 }) {
   const parsed = loginSchema.safeParse(input);
   const dbAvailable = Date.now() >= authDatabaseUnavailableUntil;
+  const safeIp = maskIpAddress(input.ip);
+  const safeUserAgent = sanitizeUserAgent(input.userAgent);
 
   if (!parsed.success) {
     if (dbAvailable) {
       await createAuditLog({
         eventType: AuditEvent.LOGIN_FAILED,
-        ip: input.ip,
-        userAgent: input.userAgent,
+        ip: safeIp,
+        userAgent: safeUserAgent,
         metadata: { reason: "invalid_payload" },
       });
     }
@@ -72,7 +75,7 @@ export async function verifyCredentialsLogin(input: {
   }
 
   const { email, password, twoFactorCode } = parsed.data;
-  const identifier = `${input.ip ?? "unknown"}:${email}`;
+  const identifier = `${safeIp ?? "unknown"}:${email}`;
   const rateLimit = shouldEnforceLoginRateLimit
     ? loginRateLimiter.check(identifier)
     : { allowed: true, remaining: Number.POSITIVE_INFINITY };
@@ -80,12 +83,12 @@ export async function verifyCredentialsLogin(input: {
   if (!rateLimit.allowed) {
     if (dbAvailable) {
       await prisma.loginAttempt.create({
-        data: { email, success: false, ip: input.ip, userAgent: input.userAgent },
+        data: { email, success: false, ip: safeIp, userAgent: safeUserAgent },
       });
       await createAuditLog({
         eventType: AuditEvent.LOGIN_FAILED,
-        ip: input.ip,
-        userAgent: input.userAgent,
+        ip: safeIp,
+        userAgent: safeUserAgent,
         metadata: { email, reason: "rate_limited" },
       });
     }
@@ -112,12 +115,12 @@ export async function verifyCredentialsLogin(input: {
 
   if (!user) {
     await prisma.loginAttempt.create({
-      data: { email, success: false, ip: input.ip, userAgent: input.userAgent },
+      data: { email, success: false, ip: safeIp, userAgent: safeUserAgent },
     });
     await createAuditLog({
       eventType: AuditEvent.LOGIN_FAILED,
-      ip: input.ip,
-      userAgent: input.userAgent,
+      ip: safeIp,
+      userAgent: safeUserAgent,
       metadata: { email, reason: "user_not_found" },
     });
     throw new CredentialsLoginError("invalid_credentials");
@@ -132,13 +135,13 @@ export async function verifyCredentialsLogin(input: {
 
   if (user.disabledAt) {
     await prisma.loginAttempt.create({
-      data: { email, userId: user.id, success: false, ip: input.ip, userAgent: input.userAgent },
+      data: { email, userId: user.id, success: false, ip: safeIp, userAgent: safeUserAgent },
     });
     await createAuditLog({
       userId: user.id,
       eventType: AuditEvent.LOGIN_FAILED,
-      ip: input.ip,
-      userAgent: input.userAgent,
+      ip: safeIp,
+      userAgent: safeUserAgent,
       metadata: { email, reason: "disabled" },
     });
     throw new CredentialsLoginError("disabled");
@@ -146,13 +149,13 @@ export async function verifyCredentialsLogin(input: {
 
   if (user.lockedUntil && user.lockedUntil > new Date()) {
     await prisma.loginAttempt.create({
-      data: { email, userId: user.id, success: false, ip: input.ip, userAgent: input.userAgent },
+      data: { email, userId: user.id, success: false, ip: safeIp, userAgent: safeUserAgent },
     });
     await createAuditLog({
       userId: user.id,
       eventType: AuditEvent.LOGIN_FAILED,
-      ip: input.ip,
-      userAgent: input.userAgent,
+      ip: safeIp,
+      userAgent: safeUserAgent,
       metadata: { email, reason: "locked" },
     });
     throw new CredentialsLoginError("locked");
@@ -164,7 +167,7 @@ export async function verifyCredentialsLogin(input: {
     const since = new Date(Date.now() - security.lockoutWindowMinutes * 60_000);
 
     await prisma.loginAttempt.create({
-      data: { email, userId: user.id, success: false, ip: input.ip, userAgent: input.userAgent },
+      data: { email, userId: user.id, success: false, ip: safeIp, userAgent: safeUserAgent },
     });
 
     const failCount = await prisma.loginAttempt.count({
@@ -184,8 +187,8 @@ export async function verifyCredentialsLogin(input: {
     await createAuditLog({
       userId: user.id,
       eventType: AuditEvent.LOGIN_FAILED,
-      ip: input.ip,
-      userAgent: input.userAgent,
+      ip: safeIp,
+      userAgent: safeUserAgent,
       metadata: { email, reason: "invalid_password" },
     });
 
@@ -203,8 +206,8 @@ export async function verifyCredentialsLogin(input: {
           eventType: "login_failed_burst",
           metadata: {
             email,
-            ip: input.ip,
-            userAgent: input.userAgent,
+            ip: safeIp,
+            userAgent: safeUserAgent,
             failures: failCount,
             windowMinutes: security.lockoutWindowMinutes,
           },
@@ -221,7 +224,7 @@ export async function verifyCredentialsLogin(input: {
   if (user.twoFactorEnabled) {
     if (!twoFactorCode || String(twoFactorCode).trim() === "") {
       await prisma.loginAttempt.create({
-        data: { email, userId: user.id, success: false, ip: input.ip, userAgent: input.userAgent },
+        data: { email, userId: user.id, success: false, ip: safeIp, userAgent: safeUserAgent },
       });
 
       const since = new Date(Date.now() - security.lockoutWindowMinutes * 60_000);
@@ -240,8 +243,8 @@ export async function verifyCredentialsLogin(input: {
       await createAuditLog({
         userId: user.id,
         eventType: AuditEvent.LOGIN_FAILED,
-        ip: input.ip,
-        userAgent: input.userAgent,
+        ip: safeIp,
+        userAgent: safeUserAgent,
         metadata: { email, reason: "2fa_required" },
       });
 
@@ -263,8 +266,8 @@ export async function verifyCredentialsLogin(input: {
             eventType: "login_failed_burst",
             metadata: {
               email,
-              ip: input.ip,
-              userAgent: input.userAgent,
+              ip: safeIp,
+              userAgent: safeUserAgent,
               failures: failCount,
               windowMinutes: security.lockoutWindowMinutes,
               reason: "2fa_required",
@@ -290,8 +293,8 @@ export async function verifyCredentialsLogin(input: {
       const backupOk = await consumeBackupCode({
         userId: user.id,
         rawCode: String(twoFactorCode),
-        ip: input.ip,
-        userAgent: input.userAgent,
+        ip: safeIp,
+        userAgent: safeUserAgent,
       });
 
       if (!backupOk) {
@@ -300,8 +303,8 @@ export async function verifyCredentialsLogin(input: {
             email,
             userId: user.id,
             success: false,
-            ip: input.ip,
-            userAgent: input.userAgent,
+            ip: safeIp,
+            userAgent: safeUserAgent,
           },
         });
 
@@ -321,8 +324,8 @@ export async function verifyCredentialsLogin(input: {
         await createAuditLog({
           userId: user.id,
           eventType: AuditEvent.LOGIN_FAILED,
-          ip: input.ip,
-          userAgent: input.userAgent,
+          ip: safeIp,
+          userAgent: safeUserAgent,
           metadata: { email, reason: "2fa_invalid" },
         });
 
@@ -344,8 +347,8 @@ export async function verifyCredentialsLogin(input: {
               eventType: "login_failed_burst",
               metadata: {
                 email,
-                ip: input.ip,
-                userAgent: input.userAgent,
+                ip: safeIp,
+                userAgent: safeUserAgent,
                 failures: failCount,
                 windowMinutes: security.lockoutWindowMinutes,
                 reason: "2fa_invalid",
@@ -362,10 +365,10 @@ export async function verifyCredentialsLogin(input: {
     }
   }
 
-  if (input.ip) {
+  if (safeIp) {
     const since = new Date(Date.now() - 30 * 24 * 60 * 60_000);
     const seen = await prisma.loginAttempt.count({
-      where: { userId: user.id, success: true, ip: input.ip, createdAt: { gte: since } },
+      where: { userId: user.id, success: true, ip: safeIp, createdAt: { gte: since } },
     });
     if (seen === 0) {
       await createSecurityEvent({
@@ -373,7 +376,7 @@ export async function verifyCredentialsLogin(input: {
         userId: user.id,
         severity: "MEDIUM",
         eventType: "login_new_ip",
-        metadata: { ip: input.ip, userAgent: input.userAgent, email, windowDays: 30 },
+        metadata: { ip: safeIp, userAgent: safeUserAgent, email, windowDays: 30 },
       });
     }
   }
@@ -389,15 +392,16 @@ export async function verifyCredentialsLogin(input: {
   }
 
   await prisma.loginAttempt.create({
-    data: { email, userId: user.id, success: true, ip: input.ip, userAgent: input.userAgent },
+    data: { email, userId: user.id, success: true, ip: safeIp, userAgent: safeUserAgent },
   });
 
   await createAuditLog({
     userId: user.id,
     eventType: AuditEvent.LOGIN_SUCCESS,
-    ip: input.ip,
-    userAgent: input.userAgent,
+    ip: safeIp,
+    userAgent: safeUserAgent,
   });
 
   return { id: user.id, email: user.email, name: user.name, role: user.role };
 }
+

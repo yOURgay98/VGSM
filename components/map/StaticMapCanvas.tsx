@@ -20,8 +20,33 @@ export type ToolPoint = {
   tool: "none" | "ping" | "pick_call_location" | "add_poi" | "draw_zone";
 };
 
+type MapImageVariant = 1 | 2 | 4;
+
 function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));
+}
+
+function variantSrc(baseSrc: string, variant: MapImageVariant) {
+  if (variant === 1) return baseSrc;
+  const match = baseSrc.match(/^(.*?)(\.[a-zA-Z0-9]+)(\?.*)?$/);
+  if (!match) return baseSrc;
+  const [, base, ext, query] = match;
+  return `${base}@${variant}x${ext}${query ?? ""}`;
+}
+
+function chooseVariant(current: MapImageVariant, zoom: number): MapImageVariant {
+  // Apply with hysteresis to avoid flapping near thresholds.
+  if (current === 1) {
+    if (zoom >= 1.85) return 2;
+    return 1;
+  }
+  if (current === 2) {
+    if (zoom >= 3.6) return 4;
+    if (zoom <= 1.6) return 1;
+    return 2;
+  }
+  if (zoom <= 3.2) return 2;
+  return 4;
 }
 
 export function StaticMapCanvas({
@@ -55,6 +80,9 @@ export function StaticMapCanvas({
   const [naturalSize, setNaturalSize] = useState({ width: 1920, height: 1080 });
   const [containerSize, setContainerSize] = useState({ width: 1, height: 1 });
   const [missingImage, setMissingImage] = useState(false);
+  const [renderSrc, setRenderSrc] = useState(imageSrc);
+  const [renderVariant, setRenderVariant] = useState<MapImageVariant>(1);
+  const unavailableVariants = useRef<Record<string, true>>({});
 
   const [zoom, setZoom] = useState(viewState?.zoom ?? 1);
   const [offset, setOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -67,6 +95,39 @@ export function StaticMapCanvas({
   }, [containerSize.height, containerSize.width, naturalSize.height, naturalSize.width]);
 
   const scale = useMemo(() => baseScale * zoom, [baseScale, zoom]);
+
+  useEffect(() => {
+    setRenderSrc(imageSrc);
+    setRenderVariant(1);
+    unavailableVariants.current = {};
+    setMissingImage(false);
+  }, [imageSrc]);
+
+  useEffect(() => {
+    if (missingImage) return;
+    const desired = chooseVariant(renderVariant, zoom);
+    if (desired === renderVariant) return;
+
+    const candidates: MapImageVariant[] = desired === 4 ? [4, 2, 1] : desired === 2 ? [2, 1] : [1];
+    const nextSrc =
+      candidates
+        .map((v) => variantSrc(imageSrc, v))
+        .find((src) => !unavailableVariants.current[src]) ?? imageSrc;
+
+    if (nextSrc === renderSrc) return;
+
+    const img = new Image();
+    img.onload = () => {
+      setRenderSrc(nextSrc);
+      const nextVariant =
+        nextSrc === variantSrc(imageSrc, 4) ? 4 : nextSrc === variantSrc(imageSrc, 2) ? 2 : 1;
+      setRenderVariant(nextVariant);
+    };
+    img.onerror = () => {
+      unavailableVariants.current[nextSrc] = true;
+    };
+    img.src = nextSrc;
+  }, [imageSrc, missingImage, renderSrc, renderVariant, zoom]);
 
   const clampOffset = useCallback(
     (next: { x: number; y: number }) => {
@@ -321,7 +382,7 @@ export function StaticMapCanvas({
       >
         <img
           ref={imgRef}
-          src={imageSrc}
+          src={renderSrc}
           alt="ERLC tactical map"
           className="pointer-events-none select-none"
           draggable={false}
@@ -331,7 +392,17 @@ export function StaticMapCanvas({
             setNaturalSize({ width: img.naturalWidth, height: img.naturalHeight });
             setMissingImage(false);
           }}
-          onError={() => setMissingImage(true)}
+          onError={() => {
+            // If a high-resolution variant is missing, fall back to base instead of showing the
+            // global missing-image placeholder.
+            if (renderSrc !== imageSrc) {
+              unavailableVariants.current[renderSrc] = true;
+              setRenderSrc(imageSrc);
+              setRenderVariant(1);
+              return;
+            }
+            setMissingImage(true);
+          }}
         />
         <svg
           width={naturalSize.width}

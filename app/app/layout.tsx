@@ -5,7 +5,11 @@ import { getGeneralSettings } from "@/lib/services/settings";
 import { getSessionUser } from "@/lib/services/auth";
 import { prisma } from "@/lib/db";
 import { touchCurrentSession } from "@/lib/services/session";
-import { listCommunitiesForUser, requireActiveCommunityId } from "@/lib/services/community";
+import {
+  getCommunityAuthContext,
+  listCommunitiesForUser,
+  requireActiveCommunityId,
+} from "@/lib/services/community";
 
 export const dynamic = "force-dynamic";
 
@@ -23,12 +27,13 @@ export default async function AuthenticatedAppLayout({ children }: { children: R
 
   const communityId = await requireActiveCommunityId(user.id);
 
-  const [settings, dbUser] = await Promise.all([
+  const [settings, dbUser, authContext] = await Promise.all([
     getGeneralSettings(communityId),
     prisma.user.findUnique({
       where: { id: user.id },
       select: { twoFactorEnabled: true, disabledAt: true },
     }),
+    getCommunityAuthContext({ userId: user.id, communityId }),
   ]);
 
   const active = communities.find((c) => c.id === communityId) ?? communities[0]!;
@@ -63,6 +68,8 @@ export default async function AuthenticatedAppLayout({ children }: { children: R
         email: user.email,
         role: active.role.name,
       }}
+      permissions={authContext.permissions}
+      rolePriority={authContext.membership.role.priority}
     >
       {children}
     </AppShell>
