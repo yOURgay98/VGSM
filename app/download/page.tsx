@@ -62,7 +62,7 @@ export default function DownloadPage() {
                 <RecommendedDownloadButton availablePlatforms={availablePlatforms} />
               </div>
               <div className="mt-4 text-xs text-white/55">
-                <Link href="/docs/desktop#verify" className="mkt-link text-xs">
+                <Link href="/docs/integrations#desktop" className="mkt-link text-xs">
                   Verify downloads
                 </Link>
               </div>
@@ -100,7 +100,7 @@ export default function DownloadPage() {
               <Link href="/app" className="mkt-btn mkt-btn-primary">
                 Open Web Console
               </Link>
-              <Link href="/docs/desktop" className="mkt-btn mkt-btn-secondary">
+              <Link href="/docs/integrations#desktop" className="mkt-btn mkt-btn-secondary">
                 Build from source
               </Link>
             </div>
@@ -122,7 +122,7 @@ export default function DownloadPage() {
               <>
                 <p className="mt-2 text-[13px] leading-relaxed text-white/65">
                   Published SHA256 checksums are listed below. Use{" "}
-                  <Link href="/docs/desktop#verify" className="mkt-link">
+                  <Link href="/docs/integrations#desktop" className="mkt-link">
                     verification instructions
                   </Link>{" "}
                   to compare locally.

@@ -62,6 +62,7 @@ type NavItem = {
 
 type NavGroup = {
   id: string;
+  section: "everyday" | "ops" | "advanced" | "sensitive";
   label: string;
   items: NavItem[];
   defaultCollapsed?: boolean;
@@ -69,6 +70,13 @@ type NavGroup = {
 
 const GROUP_STATE_KEY = "ess.sidebar.groups.v1";
 const COMPACT_KEY = "ess.sidebar.compact.v1";
+const SECTION_ORDER = ["everyday", "ops", "advanced", "sensitive"] as const;
+const SECTION_LABEL: Record<(typeof SECTION_ORDER)[number], string> = {
+  everyday: "Everyday",
+  ops: "Operations",
+  advanced: "Advanced",
+  sensitive: "Sensitive",
+};
 
 function safeParseJson<T>(raw: string | null): T | null {
   if (!raw) return null;
@@ -101,6 +109,7 @@ function tourIdForHref(href: string): string | undefined {
 const navGroups: NavGroup[] = [
   {
     id: "core",
+    section: "everyday",
     label: "Core",
     items: [
       {
@@ -135,6 +144,7 @@ const navGroups: NavGroup[] = [
   },
   {
     id: "moderation",
+    section: "everyday",
     label: "Moderation",
     items: [
       {
@@ -143,13 +153,6 @@ const navGroups: NavGroup[] = [
         icon: ClipboardList,
         isActive: (p) => isPath(p, "/app/moderation"),
         requiredPermission: "reports:read",
-      },
-      {
-        href: "/app/players",
-        label: "Players",
-        icon: Users,
-        isActive: (p) => startsWithPath(p, "/app/players"),
-        requiredPermission: "players:read",
       },
       {
         href: "/app/reports",
@@ -164,6 +167,13 @@ const navGroups: NavGroup[] = [
         icon: FolderKanban,
         isActive: (p) => startsWithPath(p, "/app/cases"),
         requiredPermission: "cases:read",
+      },
+      {
+        href: "/app/players",
+        label: "Players",
+        icon: Users,
+        isActive: (p) => startsWithPath(p, "/app/players"),
+        requiredPermission: "players:read",
       },
       {
         href: "/app/actions?scope=bans",
@@ -190,6 +200,7 @@ const navGroups: NavGroup[] = [
   },
   {
     id: "operations",
+    section: "ops",
     label: "Operations",
     items: [
       {
@@ -209,7 +220,135 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
+    id: "platform",
+    section: "advanced",
+    label: "Platform",
+    defaultCollapsed: true,
+    items: [
+      {
+        href: "/app/platform/automation",
+        label: "Automation",
+        icon: Sparkles,
+        isActive: (p) => startsWithPath(p, "/app/platform/automation"),
+        requiredPermission: "players:read",
+        badge: "Soon",
+      },
+      {
+        href: "/app/platform/notifications",
+        label: "Notifications",
+        icon: BellRing,
+        isActive: (p) => startsWithPath(p, "/app/platform/notifications"),
+        requiredPermission: "players:read",
+        badge: "Stub",
+      },
+      {
+        href: "/app/platform/templates",
+        label: "Templates",
+        icon: LayoutTemplate,
+        isActive: (p) => startsWithPath(p, "/app/platform/templates"),
+        requiredPermission: "players:read",
+        badge: "Soon",
+      },
+    ],
+  },
+  {
+    id: "compliance",
+    section: "advanced",
+    label: "Compliance",
+    defaultCollapsed: true,
+    items: [
+      {
+        href: "/app/compliance/data-policy",
+        label: "Data Policy",
+        icon: Scale,
+        isActive: (p) => startsWithPath(p, "/app/compliance/data-policy"),
+        requiredPermission: "security:read",
+      },
+      {
+        href: "/app/compliance/retention",
+        label: "Retention",
+        icon: Archive,
+        isActive: (p) => startsWithPath(p, "/app/compliance/retention"),
+        requiredPermission: "security:read",
+        badge: "Soon",
+      },
+      {
+        href: "/app/compliance/evidence-locker",
+        label: "Evidence Locker",
+        icon: Briefcase,
+        isActive: (p) => startsWithPath(p, "/app/compliance/evidence-locker"),
+        requiredPermission: "security:read",
+        badge: "Soon",
+      },
+    ],
+  },
+  {
+    id: "intelligence",
+    section: "advanced",
+    label: "Intelligence",
+    defaultCollapsed: true,
+    items: [
+      {
+        href: "/app/intelligence/risk-scoring",
+        label: "Risk Scoring",
+        icon: Brain,
+        isActive: (p) => startsWithPath(p, "/app/intelligence/risk-scoring"),
+        requiredPermission: "security:read",
+        badge: "Soon",
+      },
+      {
+        href: "/app/intelligence/watchlist",
+        label: "Watchlist",
+        icon: Eye,
+        isActive: (p) => startsWithPath(p, "/app/intelligence/watchlist"),
+        requiredPermission: "security:read",
+        badge: "Soon",
+      },
+      {
+        href: "/app/intelligence/trends",
+        label: "Trends",
+        icon: TrendingUp,
+        isActive: (p) => startsWithPath(p, "/app/intelligence/trends"),
+        requiredPermission: "security:read",
+        badge: "Soon",
+      },
+    ],
+  },
+  {
+    id: "people",
+    section: "advanced",
+    label: "People",
+    defaultCollapsed: true,
+    items: [
+      {
+        href: "/app/people/staff-directory",
+        label: "Staff Directory",
+        icon: IdCard,
+        isActive: (p) => startsWithPath(p, "/app/people/staff-directory"),
+        requiredPermission: "players:read",
+        badge: "Soon",
+      },
+      {
+        href: "/app/people/training-logs",
+        label: "Training Logs",
+        icon: GraduationCap,
+        isActive: (p) => startsWithPath(p, "/app/people/training-logs"),
+        requiredPermission: "players:read",
+        badge: "Soon",
+      },
+      {
+        href: "/app/people/performance",
+        label: "Performance",
+        icon: BarChart3,
+        isActive: (p) => startsWithPath(p, "/app/people/performance"),
+        requiredPermission: "players:read",
+        badge: "Soon",
+      },
+    ],
+  },
+  {
     id: "security",
+    section: "sensitive",
     label: "Security",
     items: [
       {
@@ -237,6 +376,7 @@ const navGroups: NavGroup[] = [
   },
   {
     id: "admin",
+    section: "sensitive",
     label: "Admin",
     defaultCollapsed: false,
     items: [
@@ -283,99 +423,8 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    id: "platform",
-    label: "Platform",
-    defaultCollapsed: true,
-    items: [
-      {
-        href: "/app/platform/automation",
-        label: "Automation",
-        icon: Sparkles,
-        isActive: (p) => startsWithPath(p, "/app/platform/automation"),
-        requiredPermission: "players:read",
-        badge: "Soon",
-      },
-      {
-        href: "/app/platform/notifications",
-        label: "Notifications",
-        icon: BellRing,
-        isActive: (p) => startsWithPath(p, "/app/platform/notifications"),
-        requiredPermission: "players:read",
-        badge: "Stub",
-      },
-      {
-        href: "/app/platform/templates",
-        label: "Templates",
-        icon: LayoutTemplate,
-        isActive: (p) => startsWithPath(p, "/app/platform/templates"),
-        requiredPermission: "players:read",
-        badge: "Soon",
-      },
-    ],
-  },
-  {
-    id: "compliance",
-    label: "Compliance",
-    defaultCollapsed: true,
-    items: [
-      {
-        href: "/app/compliance/data-policy",
-        label: "Data Policy",
-        icon: Scale,
-        isActive: (p) => startsWithPath(p, "/app/compliance/data-policy"),
-        requiredPermission: "security:read",
-      },
-      {
-        href: "/app/compliance/retention",
-        label: "Retention",
-        icon: Archive,
-        isActive: (p) => startsWithPath(p, "/app/compliance/retention"),
-        requiredPermission: "security:read",
-        badge: "Soon",
-      },
-      {
-        href: "/app/compliance/evidence-locker",
-        label: "Evidence Locker",
-        icon: Briefcase,
-        isActive: (p) => startsWithPath(p, "/app/compliance/evidence-locker"),
-        requiredPermission: "security:read",
-        badge: "Soon",
-      },
-    ],
-  },
-  {
-    id: "intelligence",
-    label: "Intelligence",
-    defaultCollapsed: true,
-    items: [
-      {
-        href: "/app/intelligence/risk-scoring",
-        label: "Risk Scoring",
-        icon: Brain,
-        isActive: (p) => startsWithPath(p, "/app/intelligence/risk-scoring"),
-        requiredPermission: "security:read",
-        badge: "Soon",
-      },
-      {
-        href: "/app/intelligence/watchlist",
-        label: "Watchlist",
-        icon: Eye,
-        isActive: (p) => startsWithPath(p, "/app/intelligence/watchlist"),
-        requiredPermission: "security:read",
-        badge: "Soon",
-      },
-      {
-        href: "/app/intelligence/trends",
-        label: "Trends",
-        icon: TrendingUp,
-        isActive: (p) => startsWithPath(p, "/app/intelligence/trends"),
-        requiredPermission: "security:read",
-        badge: "Soon",
-      },
-    ],
-  },
-  {
     id: "developer",
+    section: "sensitive",
     label: "Developer",
     defaultCollapsed: true,
     items: [
@@ -400,37 +449,6 @@ const navGroups: NavGroup[] = [
         icon: FlaskConical,
         isActive: (p) => startsWithPath(p, "/app/developer/sandbox"),
         requiredPermission: "api_keys:manage",
-      },
-    ],
-  },
-  {
-    id: "people",
-    label: "People",
-    defaultCollapsed: true,
-    items: [
-      {
-        href: "/app/people/staff-directory",
-        label: "Staff Directory",
-        icon: IdCard,
-        isActive: (p) => startsWithPath(p, "/app/people/staff-directory"),
-        requiredPermission: "players:read",
-        badge: "Soon",
-      },
-      {
-        href: "/app/people/training-logs",
-        label: "Training Logs",
-        icon: GraduationCap,
-        isActive: (p) => startsWithPath(p, "/app/people/training-logs"),
-        requiredPermission: "players:read",
-        badge: "Soon",
-      },
-      {
-        href: "/app/people/performance",
-        label: "Performance",
-        icon: BarChart3,
-        isActive: (p) => startsWithPath(p, "/app/people/performance"),
-        requiredPermission: "players:read",
-        badge: "Soon",
       },
     ],
   },
@@ -510,6 +528,16 @@ export function Sidebar({
       .filter((group) => group.items.length > 0);
   }, [permissions, rolePriority]);
 
+  const visibleSections = useMemo(
+    () =>
+      SECTION_ORDER.map((section) => ({
+        section,
+        label: SECTION_LABEL[section],
+        groups: visibleGroups.filter((group) => group.section === section),
+      })).filter((entry) => entry.groups.length > 0),
+    [visibleGroups],
+  );
+
   const header = useMemo(() => {
     return (
       <div
@@ -550,89 +578,108 @@ export function Sidebar({
       {header}
 
       <nav aria-label="Primary" className={cn("space-y-3", compact && "space-y-2")}>
-        {visibleGroups.map((group) => {
-          const isCollapsed = Boolean(collapsed[group.id]);
+        {visibleSections.map((section, sectionIndex) => (
+          <div
+            key={section.section}
+            className={cn(
+              "space-y-2",
+              sectionIndex > 0 && "border-t border-[color:var(--border)] pt-2.5",
+            )}
+          >
+            <p
+              className={cn(
+                "px-2 text-[8px] font-medium uppercase tracking-[0.14em] text-[color:var(--text-muted)]/70",
+                compact && "sr-only",
+              )}
+            >
+              {section.label}
+            </p>
 
-          return (
-            <div key={group.id}>
-              <button
-                type="button"
-                className={cn(
-                  "ui-transition flex h-6 w-full items-center gap-2 rounded-lg px-2 text-left text-[8px] font-medium uppercase tracking-[0.14em] text-[color:var(--text-muted)]/72 hover:bg-black/[0.03] dark:hover:bg-white/[0.07]",
-                  compact && "justify-center px-0",
-                )}
-                onClick={() => setCollapsed((prev) => ({ ...prev, [group.id]: !prev[group.id] }))}
-                aria-expanded={!isCollapsed}
-                aria-controls={`sidebar-group-${group.id}`}
-                title={compact ? group.label : undefined}
-              >
-                <ChevronRight
-                  className={cn(
-                    "h-3.5 w-3.5 shrink-0 transition-transform duration-200",
-                    !isCollapsed && "rotate-90",
-                  )}
-                  aria-hidden
-                />
-                <span className={cn("truncate", compact && "sr-only")}>{group.label}</span>
-              </button>
+            {section.groups.map((group) => {
+              const isCollapsed = Boolean(collapsed[group.id]);
 
-              <AnimatePresence initial={false}>
-                {!isCollapsed ? (
-                  <motion.div
-                    id={`sidebar-group-${group.id}`}
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.18, ease: "easeOut" }}
-                    className="mt-1 space-y-1 overflow-hidden"
+              return (
+                <div key={group.id}>
+                  <button
+                    type="button"
+                    className={cn(
+                      "ui-transition flex h-6 w-full items-center gap-2 rounded-lg px-2 text-left text-[8px] font-medium uppercase tracking-[0.14em] text-[color:var(--text-muted)]/72 hover:bg-black/[0.03] dark:hover:bg-white/[0.07]",
+                      compact && "justify-center px-0",
+                    )}
+                    onClick={() => setCollapsed((prev) => ({ ...prev, [group.id]: !prev[group.id] }))}
+                    aria-expanded={!isCollapsed}
+                    aria-controls={`sidebar-group-${group.id}`}
+                    title={compact ? group.label : undefined}
                   >
-                    {group.items.map((item) => {
-                      const active = item.isActive(pathname, scope);
-                      const Icon = item.icon;
+                    <ChevronRight
+                      className={cn(
+                        "h-3.5 w-3.5 shrink-0 transition-transform duration-200",
+                        !isCollapsed && "rotate-90",
+                      )}
+                      aria-hidden
+                    />
+                    <span className={cn("truncate", compact && "sr-only")}>{group.label}</span>
+                  </button>
 
-                      return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          data-tour={tourIdForHref(item.href)}
-                          className={cn(
-                            "ui-transition group relative flex h-8 items-center gap-2 rounded-lg pl-3 pr-2 text-[13px] font-medium text-[color:var(--text-muted)] hover:bg-black/[0.03] hover:text-[color:var(--text-main)] dark:hover:bg-white/[0.07]",
-                            "transition-all duration-200",
-                            compact && "justify-center gap-0 px-0",
-                            active &&
-                              "bg-white/75 text-[color:var(--text-main)] shadow-[var(--panel-shadow)] dark:bg-white/[0.09]",
-                          )}
-                          title={compact ? item.label : undefined}
-                        >
-                          {active ? (
-                            <motion.span
-                              layoutId="sidebar-active-indicator"
-                              transition={{ duration: 0.18, ease: "easeOut" }}
-                              aria-hidden
-                              className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-[var(--accent)]"
-                            />
-                          ) : (
-                            <span
-                              aria-hidden
-                              className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-[var(--accent)] opacity-0"
-                            />
-                          )}
-                          <Icon className="h-4 w-4 shrink-0" />
-                          <span className={cn("truncate", compact && "sr-only")}>{item.label}</span>
-                          {item.badge && !compact ? (
-                            <span className="ml-auto rounded-full border border-[color:var(--border)] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.06em] text-[color:var(--text-muted)]">
-                              {item.badge}
-                            </span>
-                          ) : null}
-                        </Link>
-                      );
-                    })}
-                  </motion.div>
-                ) : null}
-              </AnimatePresence>
-            </div>
-          );
-        })}
+                  <AnimatePresence initial={false}>
+                    {!isCollapsed ? (
+                      <motion.div
+                        id={`sidebar-group-${group.id}`}
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.18, ease: "easeOut" }}
+                        className="mt-1 space-y-1 overflow-hidden"
+                      >
+                        {group.items.map((item) => {
+                          const active = item.isActive(pathname, scope);
+                          const Icon = item.icon;
+
+                          return (
+                            <Link
+                              key={item.href}
+                              href={item.href}
+                              data-tour={tourIdForHref(item.href)}
+                              className={cn(
+                                "ui-transition group relative flex h-8 items-center gap-2 rounded-lg pl-3 pr-2 text-[13px] font-medium text-[color:var(--text-muted)] hover:bg-black/[0.03] hover:text-[color:var(--text-main)] dark:hover:bg-white/[0.07]",
+                                "transition-all duration-200",
+                                compact && "justify-center gap-0 px-0",
+                                active &&
+                                  "bg-white/75 text-[color:var(--text-main)] shadow-[var(--panel-shadow)] dark:bg-white/[0.09]",
+                              )}
+                              title={compact ? item.label : undefined}
+                            >
+                              {active ? (
+                                <motion.span
+                                  layoutId="sidebar-active-indicator"
+                                  transition={{ duration: 0.18, ease: "easeOut" }}
+                                  aria-hidden
+                                  className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-[var(--accent)]"
+                                />
+                              ) : (
+                                <span
+                                  aria-hidden
+                                  className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-[var(--accent)] opacity-0"
+                                />
+                              )}
+                              <Icon className="h-4 w-4 shrink-0" />
+                              <span className={cn("truncate", compact && "sr-only")}>{item.label}</span>
+                              {item.badge && !compact ? (
+                                <span className="ml-auto rounded-full border border-[color:var(--border)] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.06em] text-[color:var(--text-muted)]">
+                                  {item.badge}
+                                </span>
+                              ) : null}
+                            </Link>
+                          );
+                        })}
+                      </motion.div>
+                    ) : null}
+                  </AnimatePresence>
+                </div>
+              );
+            })}
+          </div>
+        ))}
       </nav>
     </aside>
   );

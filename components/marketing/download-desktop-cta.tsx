@@ -71,7 +71,7 @@ export function DownloadDesktopCta({ className }: { className?: string }) {
             <span className="text-white/55">Platform: {activePlatform ?? platform}</span>
             {isDev ? (
               <Link
-                href="/docs/desktop"
+                href="/docs/integrations#desktop"
                 className="ui-transition font-medium text-white/80 hover:text-white hover:underline"
               >
                 Build desktop app

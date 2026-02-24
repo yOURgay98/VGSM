@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { AppWindowMac, Bell, CircleUserRound, HelpCircle } from "lucide-react";
+import { AppWindowMac, CircleUserRound, HelpCircle } from "lucide-react";
 
 import { logoutAction } from "@/app/actions/auth-actions";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { CommandBar } from "@/components/commands/command-bar";
 import { CommunitySwitcher } from "@/components/layout/community-switcher";
+import { NotificationsMenu } from "@/components/layout/notifications-menu";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { SensitiveModeToggle } from "@/components/security/sensitive-mode-toggle";
 
@@ -65,51 +66,40 @@ export function TitleBar({ title, user, community, communities }: TitleBarProps)
           <CommandBar />
         </div>
 
-        <div className="ml-auto flex items-center gap-0.5">
+        <div className="ml-auto flex items-center gap-1">
           <CommunitySwitcher community={community} communities={communities} />
-
-          <Button asChild size="icon" variant="ghost" aria-label="Open desktop download page">
-            <Link href="/download">
-              <AppWindowMac className="h-4 w-4" />
-            </Link>
-          </Button>
-
-          <SensitiveModeToggle />
-
-          <Button size="icon" variant="ghost" aria-label="Notifications">
-            <Bell className="h-4 w-4" />
-          </Button>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button size="icon" variant="ghost" aria-label="Help and tips">
-                <HelpCircle className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64">
-              <DropdownMenuLabel>Help</DropdownMenuLabel>
-              <DropdownMenuItem asChild>
-                <Link href="/docs">Quick docs</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/docs#shortcuts">Keyboard shortcuts</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/app/moderation">Moderation Desk quick start</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/app/settings/access-keys">Access keys guide</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/app/dispatch?map=1">Dispatch map tips</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/app/security">Security checklist</Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <ThemeToggle />
+          <div className="flex items-center rounded-[var(--radius-control)] border border-[color:var(--border)] bg-[color:var(--surface)]/65 px-0.5">
+            <NotificationsMenu />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="icon" variant="ghost" aria-label="Help and tips">
+                  <HelpCircle className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-64">
+                <DropdownMenuLabel>Help</DropdownMenuLabel>
+                <DropdownMenuItem asChild>
+                  <Link href="/docs">Quick docs</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/docs#shortcuts">Keyboard shortcuts</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/app/moderation">Moderation Desk quick start</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/app/settings/access-keys">Access keys guide</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/app/dispatch?map=1">Dispatch map tips</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/app/security">Security checklist</Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <ThemeToggle />
+          </div>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -133,6 +123,16 @@ export function TitleBar({ title, user, community, communities }: TitleBarProps)
               <DropdownMenuItem asChild>
                 <Link href="/app/settings">Settings</Link>
               </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/download">
+                  <AppWindowMac className="h-4 w-4" />
+                  Download desktop
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <div className="px-1 py-1">
+                <SensitiveModeToggle variant="menu" />
+              </div>
               <DropdownMenuSeparator />
               <form action={logoutAction} className="w-full">
                 <button

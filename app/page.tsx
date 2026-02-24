@@ -11,7 +11,13 @@ export default async function HomePage() {
   }
 
   return (
-    <MarketingShell sessionUser={sessionUser}>
+    <MarketingShell
+      sessionUser={sessionUser}
+      showHeader={false}
+      footerVariant="none"
+      className="vsm-landing-immersive"
+      contentClassName="pt-0 pb-8"
+    >
       <LandingContent isAuthed={Boolean(sessionUser)} />
     </MarketingShell>
   );

@@ -1,73 +1,75 @@
+import Link from "next/link";
+
+import { DocsArticle, DocsCallout, DocsSection } from "@/components/marketing/docs-content";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 
 const CONTACT_EMAIL = "johnnywoodswork@gmail.com";
 
 export default function PrivacyPage() {
   return (
-    <MarketingShell>
-      <section className="space-y-10">
-        <header className="max-w-[52rem]">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">
+    <MarketingShell
+      showHeader={false}
+      footerVariant="minimal-center"
+      className="vsm-docs-surface"
+      contentClassName="pt-6 pb-10"
+    >
+      <section className="relative z-10 mx-auto max-w-[70ch] space-y-4">
+        <header className="flex items-center justify-between gap-3 pb-2">
+          <p className="text-[12px] font-semibold uppercase tracking-[0.2em] text-white/64">
             Privacy
           </p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white">
-            Privacy Policy
-          </h1>
-          <p className="mt-3 text-[13px] text-white/60">Last updated: February 16, 2026</p>
+          <Link href="/" className="ui-transition text-[12px] text-white/56 hover:text-white/84">
+            Back to Home
+          </Link>
         </header>
 
-        <div className="space-y-3 text-[14px] leading-relaxed text-white/70">
-          <Section title="1. What We Collect">
-            We collect account identifiers (email, name), authentication/session records, IP
-            addresses, user agent strings, moderation actions, dispatch activity, audit logs, and
-            operational metadata needed to run VSM.
-          </Section>
+        <DocsArticle
+          title="Privacy / Data Policy"
+          intro="This policy explains what Vanguard collects, what is excluded, and how data is protected in day-to-day operations."
+        >
+          <DocsSection title="What we collect">
+            Account identity (email and profile fields), tenant membership/role data, session
+            metadata, moderation actions, dispatch operations, and audit records required for
+            accountability.
+          </DocsSection>
 
-          <Section title="2. Why We Collect It">
-            Data is used to authenticate users, enforce permissions, prevent abuse, support
-            moderation workflows, coordinate operations, investigate incidents, and maintain
-            tamper-evident audit records.
-          </Section>
+          <DocsSection title="What we explicitly do not store as raw values">
+            <ul className="list-disc space-y-1.5 pl-5">
+              <li>We do NOT store raw IP addresses in standard audit records.</li>
+              <li>We do NOT store plaintext access keys or token secrets.</li>
+              <li>We do NOT store raw credential payloads in action metadata.</li>
+            </ul>
+          </DocsSection>
 
-          <Section title="3. Retention">
-            Operational and security logs are retained as long as needed for moderation
-            accountability and platform safety. Communities may configure shorter retention where
-            supported. Expired sessions and obsolete data are periodically cleaned up.
-          </Section>
+          <DocsSection title="Why data is used">
+            Data supports authentication, abuse prevention, moderation workflows, incident response,
+            and post-incident verification through audit trails.
+          </DocsSection>
 
-          <Section title="4. Sharing">
-            We do not sell personal data. Information may be shared with infrastructure/service
-            providers strictly to operate the platform, and with lawful authorities if legally
-            required.
-          </Section>
+          <DocsSection title="Retention">
+            Retention is based on security and operational accountability requirements. Retention
+            controls are tightened by policy and can be further configured over time.
+          </DocsSection>
 
-          <Section title="5. Security Measures">
-            We use role-based access controls, password hashing, session controls, optional 2FA,
-            rate limiting, audit logging, and tenant isolation checks to protect data and reduce
-            abuse risk.
-          </Section>
+          <DocsSection title="Contact">
+            Privacy requests and policy questions can be sent to{" "}
+            <a className="text-white/85 hover:text-white" href={`mailto:${CONTACT_EMAIL}`}>
+              {CONTACT_EMAIL}
+            </a>
+            .
+          </DocsSection>
 
-          <Section title="6. User Rights">
-            Depending on your region, you may request access, correction, or deletion of your
-            account data where applicable. Community-level moderation records may be retained when
-            needed for security and compliance.
-          </Section>
+          <DocsCallout>
+            This page is aligned with the docs privacy statement at{" "}
+            <Link href="/docs/privacy" className="text-white/90 underline-offset-2 hover:underline">
+              /docs/privacy
+            </Link>
+            .
+          </DocsCallout>
 
-          <Section title="7. Contact">
-            Privacy requests and questions can be sent to{" "}
-            <span className="font-semibold text-white">{CONTACT_EMAIL}</span>.
-          </Section>
-        </div>
+          <p className="text-[11px] text-white/46">Last updated: February 23, 2026</p>
+        </DocsArticle>
       </section>
     </MarketingShell>
-  );
-}
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section className="rounded-[26px] border border-white/10 bg-white/[0.05] p-5">
-      <h2 className="text-[14px] font-semibold text-white">{title}</h2>
-      <p className="mt-1">{children}</p>
-    </section>
   );
 }

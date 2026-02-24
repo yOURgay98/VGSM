@@ -22,7 +22,11 @@ import { cn } from "@/lib/utils";
 
 type Status = { enabled: boolean; expiresAt: string | null };
 
-export function SensitiveModeToggle() {
+interface SensitiveModeToggleProps {
+  variant?: "icon" | "menu";
+}
+
+export function SensitiveModeToggle({ variant = "icon" }: SensitiveModeToggleProps) {
   const [status, setStatus] = useState<Status>({ enabled: false, expiresAt: null });
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -70,6 +74,40 @@ export function SensitiveModeToggle() {
     />
   ) : null;
 
+  const trigger =
+    variant === "menu" ? (
+      <button
+        type="button"
+        className={cn(
+          "ui-transition flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left text-sm outline-none hover:bg-black/[0.03] dark:hover:bg-white/[0.08]",
+          status.enabled && "text-[color:var(--text-main)]",
+        )}
+        aria-label={status.enabled ? "Sensitive mode enabled" : "Enable sensitive mode"}
+        title={status.enabled && timeLeft ? `Sensitive mode: ${timeLeft}` : "Sensitive mode"}
+      >
+        <span className="inline-flex items-center gap-2">
+          <ShieldAlert className="h-4 w-4" />
+          Sensitive mode
+        </span>
+        <span className="text-xs text-[color:var(--text-muted)]">
+          {status.enabled ? timeLeft ?? "On" : "Off"}
+        </span>
+      </button>
+    ) : (
+      <button
+        type="button"
+        className={cn(
+          "ui-transition relative inline-flex h-9 w-9 items-center justify-center rounded-md text-[color:var(--text-main)] hover:bg-black/[0.03] dark:hover:bg-white/[0.07]",
+          status.enabled && "bg-black/[0.02] dark:bg-white/[0.06]",
+        )}
+        aria-label={status.enabled ? "Sensitive mode enabled" : "Enable sensitive mode"}
+        title={status.enabled && timeLeft ? `Sensitive mode: ${timeLeft}` : "Sensitive mode"}
+      >
+        {badge}
+        <ShieldAlert className="h-4 w-4" />
+      </button>
+    );
+
   return (
     <Dialog
       open={open}
@@ -79,20 +117,7 @@ export function SensitiveModeToggle() {
         setFormState({ password: "", code: "" });
       }}
     >
-      <DialogTrigger asChild>
-        <button
-          type="button"
-          className={cn(
-            "ui-transition relative inline-flex h-9 w-9 items-center justify-center rounded-md text-[color:var(--text-main)] hover:bg-black/[0.03] dark:hover:bg-white/[0.07]",
-            status.enabled && "bg-black/[0.02] dark:bg-white/[0.06]",
-          )}
-          aria-label={status.enabled ? "Sensitive mode enabled" : "Enable sensitive mode"}
-          title={status.enabled && timeLeft ? `Sensitive mode: ${timeLeft}` : "Sensitive mode"}
-        >
-          {badge}
-          <ShieldAlert className="h-4 w-4" />
-        </button>
-      </DialogTrigger>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Sensitive Operations Mode</DialogTitle>

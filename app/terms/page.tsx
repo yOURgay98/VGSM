@@ -1,84 +1,76 @@
+import Link from "next/link";
+
+import { DocsArticle, DocsCallout, DocsSection } from "@/components/marketing/docs-content";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 
 const CONTACT_EMAIL = "johnnywoodswork@gmail.com";
 
 export default function TermsPage() {
   return (
-    <MarketingShell>
-      <section className="space-y-10">
-        <header className="max-w-[52rem]">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">
+    <MarketingShell
+      showHeader={false}
+      footerVariant="minimal-center"
+      className="vsm-docs-surface"
+      contentClassName="pt-6 pb-10"
+    >
+      <section className="relative z-10 mx-auto max-w-[70ch] space-y-4">
+        <header className="flex items-center justify-between gap-3 pb-2">
+          <p className="text-[12px] font-semibold uppercase tracking-[0.2em] text-white/64">
             Terms
           </p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white">
-            Terms of Service
-          </h1>
-          <p className="mt-3 text-[13px] text-white/60">Last updated: February 16, 2026</p>
+          <Link href="/" className="ui-transition text-[12px] text-white/56 hover:text-white/84">
+            Back to Home
+          </Link>
         </header>
 
-        <div className="space-y-3 text-[14px] leading-relaxed text-white/70">
-          <Section title="1. Eligibility">
-            VSM is intended for moderation and operations teams. You must be at least 13 years old
-            to use the service. Community owners are responsible for ensuring staff access is
-            appropriate for their region and local requirements.
-          </Section>
+        <DocsArticle
+          title="Terms of Service"
+          intro="Vanguard is an operations and security platform. These terms define acceptable use and baseline account responsibilities."
+        >
+          <DocsSection title="Eligibility">
+            You must be at least 13 years old to use the service. Community owners are responsible
+            for ensuring staff access aligns with local requirements.
+          </DocsSection>
 
-          <Section title="2. Account Responsibility">
-            You are responsible for your account credentials, security settings, and all actions
-            performed from your account. Use strong passwords, enable 2FA when available, and
-            immediately report suspected compromise.
-          </Section>
+          <DocsSection title="Account responsibility">
+            You are responsible for your credentials and all activity from your account. Strong
+            passwords and two-factor authentication are expected for privileged access.
+          </DocsSection>
 
-          <Section title="3. Acceptable Use">
-            You may use VSM only for legitimate moderation, dispatch coordination, and community
-            safety workflows. All actions are logged for accountability and security.
-          </Section>
+          <DocsSection title="Acceptable use">
+            Vanguard may only be used for legitimate moderation, operational coordination, and
+            security workflows within authorized communities.
+          </DocsSection>
 
-          <Section title="4. Prohibited Use">
-            You must not abuse, harass, or target users through the platform. You must not attempt
-            to bypass permissions, brute-force access keys, reverse engineer protected flows,
-            exploit vulnerabilities, or use VSM for cheating/hacking activity.
-          </Section>
+          <DocsSection title="Prohibited use">
+            <ul className="list-disc space-y-1.5 pl-5">
+              <li>Abuse, harassment, or targeted misuse of platform tools.</li>
+              <li>Bypassing permissions, brute forcing keys, or exploiting auth boundaries.</li>
+              <li>Reverse engineering protected flows for unauthorized access.</li>
+            </ul>
+          </DocsSection>
 
-          <Section title="5. Security Policy">
-            VSM enforces role-based access control, session monitoring, and audit trails. Any
-            attempt to tamper with authentication, tenant boundaries, or security controls may
-            result in immediate suspension and evidence preservation for investigation.
-          </Section>
+          <DocsSection title="Service availability and changes">
+            Service is provided as available. Maintenance and emergency security changes may affect
+            uptime. Terms may be updated as product behavior evolves.
+          </DocsSection>
 
-          <Section title="6. Service Availability">
-            VSM is provided on an "as available" basis. We may perform maintenance, security
-            updates, or emergency changes that temporarily affect availability. You should maintain
-            backup operational procedures.
-          </Section>
-
-          <Section title="7. Suspension and Termination">
-            We may suspend or terminate access for violations of these terms, abuse of security
-            mechanisms, or behavior that threatens platform integrity. Community owners may also
-            remove staff access from their own community.
-          </Section>
-
-          <Section title="8. Changes to These Terms">
-            We may update these terms as the product evolves. Continued use after updates means you
-            accept the revised terms. Significant changes should be communicated through release
-            notes or admin notices.
-          </Section>
-
-          <Section title="9. Contact">
+          <DocsSection title="Contact">
             Questions about these terms can be sent to{" "}
-            <span className="font-semibold text-white">{CONTACT_EMAIL}</span>.
-          </Section>
-        </div>
+            <a className="text-white/85 hover:text-white" href={`mailto:${CONTACT_EMAIL}`}>
+              {CONTACT_EMAIL}
+            </a>
+            .
+          </DocsSection>
+
+          <DocsCallout tone="warning">
+            Violations involving security abuse or permission bypass may result in immediate
+            suspension and evidence retention for investigation.
+          </DocsCallout>
+
+          <p className="text-[11px] text-white/46">Last updated: February 23, 2026</p>
+        </DocsArticle>
       </section>
     </MarketingShell>
-  );
-}
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section className="rounded-[26px] border border-white/10 bg-white/[0.05] p-5">
-      <h2 className="text-[14px] font-semibold text-white">{title}</h2>
-      <p className="mt-1">{children}</p>
-    </section>
   );
 }

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
+import { z } from "zod";
 
 import { createInviteSchema } from "@/lib/validations/invite";
 import { redeemInviteSchema } from "@/lib/validations/auth";
@@ -20,6 +21,20 @@ interface MutationResult {
   success: boolean;
   message: string;
   data?: Record<string, unknown>;
+  fieldErrors?: Partial<
+    Record<"roleId" | "templateId" | "expiresAt" | "maxUses" | "require2fa" | "requireApproval", string>
+  >;
+}
+
+function toFieldErrors(error: z.ZodError): MutationResult["fieldErrors"] {
+  const fieldErrors: MutationResult["fieldErrors"] = {};
+  for (const issue of error.issues) {
+    const key = issue.path[0];
+    if (typeof key === "string" && !fieldErrors[key as keyof typeof fieldErrors]) {
+      fieldErrors[key as keyof typeof fieldErrors] = issue.message;
+    }
+  }
+  return fieldErrors;
 }
 
 function firstHeaderValue(value: string | null) {
@@ -57,7 +72,11 @@ export async function createInviteAction(
   });
 
   if (!parsed.success) {
-    return { success: false, message: parsed.error.issues[0]?.message ?? "Invalid input." };
+    return {
+      success: false,
+      message: parsed.error.issues[0]?.message ?? "Please review the invite form.",
+      fieldErrors: toFieldErrors(parsed.error),
+    };
   }
 
   const requestHeaders = await headers();
@@ -65,18 +84,79 @@ export async function createInviteAction(
     requestHeaders.get("x-forwarded-for")?.split(",")[0]?.trim() ?? requestHeaders.get("x-real-ip");
   const userAgent = requestHeaders.get("user-agent");
 
-  const invite = await createInvite({
-    communityId: user.communityId,
-    roleId: parsed.data.roleId?.trim() ? String(parsed.data.roleId).trim() : null,
-    templateId: parsed.data.templateId?.trim() ? String(parsed.data.templateId).trim() : null,
-    maxUses: parsed.data.maxUses,
-    expiresAt: parsed.data.expiresAt ? new Date(parsed.data.expiresAt) : null,
-    require2fa: Boolean(parsed.data.require2fa),
-    requireApproval: Boolean(parsed.data.requireApproval),
-    createdByUserId: user.id,
-    ip,
-    userAgent,
-  });
+  const templateId = parsed.data.templateId ? String(parsed.data.templateId).trim() : null;
+  const roleId = parsed.data.roleId ? String(parsed.data.roleId).trim() : null;
+
+  if (templateId) {
+    const template = await prisma.inviteTemplate.findFirst({
+      where: { id: templateId, communityId: user.communityId },
+      select: { id: true, defaultRoleId: true },
+    });
+    if (!template) {
+      return {
+        success: false,
+        message: "Template is missing required fields or was removed.",
+        fieldErrors: { templateId: "Please select a valid template." },
+      };
+    }
+    if (!template.defaultRoleId && !roleId) {
+      return {
+        success: false,
+        message: "Selected template has no default role.",
+        fieldErrors: { templateId: "Template must define a default role." },
+      };
+    }
+  }
+
+  if (roleId) {
+    const role = await prisma.communityRole.findFirst({
+      where: { id: roleId, communityId: user.communityId },
+      select: { id: true },
+    });
+    if (!role) {
+      return {
+        success: false,
+        message: "Selected role is no longer available.",
+        fieldErrors: { roleId: "Please select a valid role." },
+      };
+    }
+  }
+
+  let invite: Awaited<ReturnType<typeof createInvite>>;
+  try {
+    invite = await createInvite({
+      communityId: user.communityId,
+      roleId: roleId || null,
+      templateId: templateId || null,
+      maxUses: parsed.data.maxUses,
+      expiresAt: parsed.data.expiresAt ? new Date(parsed.data.expiresAt) : null,
+      require2fa: Boolean(parsed.data.require2fa),
+      requireApproval: Boolean(parsed.data.requireApproval),
+      createdByUserId: user.id,
+      ip,
+      userAgent,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unable to create invite.";
+    if (message.includes("Role not found")) {
+      return {
+        success: false,
+        message: "Selected role is no longer available.",
+        fieldErrors: { roleId: "Please select a valid role." },
+      };
+    }
+    if (message.includes("specify a role or template")) {
+      return {
+        success: false,
+        message: "Please select a template or role.",
+        fieldErrors: { templateId: "Please select a template.", roleId: "Please select a role." },
+      };
+    }
+    return {
+      success: false,
+      message: "Unable to create invite right now. Please retry.",
+    };
+  }
 
   revalidatePath("/app/settings/invites");
 

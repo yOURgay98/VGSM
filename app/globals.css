@@ -120,6 +120,16 @@ body {
     color 150ms ease;
 }
 
+.vsm-marketing {
+  overflow-x: clip;
+}
+
+@supports not (overflow: clip) {
+  .vsm-marketing {
+    overflow-x: hidden;
+  }
+}
+
 ::selection {
   background: var(--accent-soft);
 }
@@ -158,37 +168,36 @@ select {
 /* Marketing UI button system (scoped to the marketing shell). */
 .vsm-marketing .mkt-btn {
   display: inline-flex;
-  height: 40px;
+  height: 35px;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border-radius: var(--radius-control);
-  padding: 0 18px;
-  font-size: 13px;
+  border-radius: 7px;
+  padding: 0 14px;
+  font-size: 12px;
   font-weight: 600;
-  letter-spacing: -0.01em;
-  color: rgba(255, 255, 255, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.04);
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
   -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.06) inset,
-    0 18px 34px -30px rgba(0, 0, 0, 0.9);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
   transition:
-    transform 200ms ease,
-    filter 200ms ease,
-    background-color 200ms ease,
-    border-color 200ms ease,
-    box-shadow 200ms ease,
-    opacity 200ms ease;
+    transform 180ms ease,
+    color 180ms ease,
+    filter 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    opacity 180ms ease;
 }
 
 .vsm-marketing .mkt-btn:hover {
   transform: translateY(-1px);
-  filter: brightness(1.04);
-  border-color: rgba(255, 255, 255, 0.18);
-  background: rgba(255, 255, 255, 0.06);
+  filter: brightness(1.02);
+  border-color: rgba(255, 255, 255, 0.13);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .vsm-marketing .mkt-btn:active {
@@ -197,35 +206,41 @@ select {
 
 .vsm-marketing .mkt-btn:focus-visible {
   outline: none;
-  box-shadow:
-    0 0 0 3px rgba(255, 255, 255, 0.12),
-    0 1px 0 rgba(255, 255, 255, 0.06) inset,
-    0 18px 34px -30px rgba(0, 0, 0, 0.9);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06);
 }
 
 .vsm-marketing .mkt-btn-primary {
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.02) 100%),
-    linear-gradient(180deg, rgba(36, 36, 40, 0.92) 0%, rgba(18, 18, 20, 0.94) 100%);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.01) 100%),
+    linear-gradient(180deg, rgba(22, 24, 31, 0.94) 0%, rgba(12, 13, 17, 0.96) 100%);
+  border-color: rgba(156, 176, 216, 0.2);
 }
 
 .vsm-marketing .mkt-btn-primary:hover {
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.11) 0%, rgba(255, 255, 255, 0.03) 100%),
-    linear-gradient(180deg, rgba(40, 40, 44, 0.92) 0%, rgba(18, 18, 20, 0.94) 100%);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.015) 100%),
+    linear-gradient(180deg, rgba(24, 27, 35, 0.94) 0%, rgba(12, 13, 17, 0.96) 100%);
+  border-color: rgba(174, 196, 235, 0.3);
+  box-shadow:
+    0 0 0 1px rgba(170, 192, 232, 0.12),
+    0 0 14px -10px rgba(133, 158, 222, 0.36);
 }
 
 .vsm-marketing .mkt-btn-secondary {
-  background: rgba(255, 255, 255, 0.02);
+  color: rgba(255, 255, 255, 0.62);
+  border-color: rgba(255, 255, 255, 0.12);
+  background: transparent;
 }
 
 .vsm-marketing .mkt-btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.022);
+  border-color: rgba(255, 255, 255, 0.17);
 }
 
 .vsm-marketing .mkt-btn-sm {
-  height: 36px;
-  padding: 0 14px;
+  height: 34px;
+  padding: 0 12px;
 }
 
 .vsm-marketing .mkt-link {
@@ -240,6 +255,44 @@ select {
   text-decoration: underline;
   text-underline-offset: 4px;
   text-decoration-thickness: 1px;
+}
+
+.vsm-headline-shimmer {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  isolation: isolate;
+  z-index: 0;
+}
+
+.vsm-headline-shimmer::after {
+  content: "";
+  position: absolute;
+  top: -20%;
+  left: -120%;
+  width: 60%;
+  height: 140%;
+  background: linear-gradient(
+    120deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.24) 45%,
+    transparent 72%
+  );
+  transform: skewX(-20deg);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 2;
+}
+
+.vsm-headline-shimmer-text {
+  position: relative;
+  z-index: 1;
+  display: inline-block;
+}
+
+.vsm-headline-shimmer-run::after {
+  animation: vsm-headline-shimmer-sweep 1600ms ease-in-out both;
 }
 
 .input-neutral {
@@ -490,6 +543,67 @@ html[data-theme="dark"] .input-neutral {
   opacity: 0.045;
 }
 
+[data-theme="dark"] .vsm-landing-immersive .vsm-marketing-bg,
+[data-theme="gray"] .vsm-landing-immersive .vsm-marketing-bg {
+  background:
+    radial-gradient(
+      150% 120% at 50% 122%,
+      rgba(58, 106, 188, 0.2) 0%,
+      rgba(34, 62, 114, 0.12) 38%,
+      transparent 74%
+    ),
+    linear-gradient(180deg, #06070b 0%, #070910 58%, #060810 100%);
+  background-size: 120% 120%, 100% 100%;
+  background-position: 50% 118%, 50% 50%;
+  animation: vsm-landing-base-shift 34s ease-in-out infinite alternate;
+}
+
+.vsm-landing-immersive .vsm-marketing-bg::before {
+  background: none;
+  opacity: 0 !important;
+  animation: none !important;
+}
+
+.vsm-landing-immersive .vsm-marketing-bg::after {
+  background: none;
+  opacity: 0 !important;
+  animation: none !important;
+}
+
+[data-theme="dark"] .vsm-landing-immersive,
+[data-theme="gray"] .vsm-landing-immersive {
+  overflow-x: clip;
+}
+
+.vsm-landing-immersive .vsm-marketing-bg {
+  position: fixed;
+  inset: 0;
+}
+
+.vsm-landing-immersive .vsm-marketing-bg::after {
+  opacity: 0;
+}
+
+.vsm-docs-surface .vsm-marketing-bg {
+  background:
+    radial-gradient(circle at 26% 118%, rgba(44, 88, 164, 0.24), transparent 48%),
+    radial-gradient(circle at 82% 112%, rgba(72, 101, 174, 0.18), transparent 46%),
+    linear-gradient(180deg, #06070b 0%, #070910 72%, #06070d 100%);
+}
+
+.vsm-docs-surface .vsm-marketing-bg::before {
+  background:
+    radial-gradient(circle at 20% 110%, rgba(98, 152, 234, 0.15), transparent 44%),
+    radial-gradient(circle at 78% 104%, rgba(115, 130, 229, 0.13), transparent 42%);
+  opacity: 0.28;
+  animation: vsm-docs-atmosphere-a 52s ease-in-out infinite alternate;
+}
+
+.vsm-docs-surface .vsm-marketing-bg::after {
+  opacity: 0.038;
+  animation: vsm-docs-atmosphere-b 58s ease-in-out infinite alternate;
+}
+
 [data-theme="light"] .vsm-marketing-bg::after {
   opacity: 0.08;
 }
@@ -516,6 +630,142 @@ html[data-theme="dark"] .input-neutral {
   }
   to {
     transform: translate3d(1.8%, -1.2%, 0);
+  }
+}
+
+@keyframes vsm-headline-shimmer-sweep {
+  0% {
+    opacity: 0;
+    left: -120%;
+  }
+  12% {
+    opacity: 0.18;
+  }
+  42% {
+    opacity: 0.28;
+  }
+  86% {
+    opacity: 0.14;
+    left: 128%;
+  }
+  100% {
+    opacity: 0;
+    left: 140%;
+  }
+}
+
+@keyframes vsm-landing-base-shift {
+  0% {
+    background-position: 48% 118%, 50% 50%;
+    filter: hue-rotate(-4deg) saturate(102%);
+  }
+  50% {
+    background-position: 52% 114%, 50% 50%;
+    filter: hue-rotate(4deg) saturate(108%);
+  }
+  100% {
+    background-position: 50% 120%, 50% 50%;
+    filter: hue-rotate(8deg) saturate(106%);
+  }
+}
+
+@keyframes vsm-landing-atmosphere-drift-a {
+  from {
+    transform: translate3d(-1.4%, 1.2%, 0) scale(1);
+    background-position: 50% 106%;
+    filter: hue-rotate(-6deg) saturate(104%);
+  }
+  to {
+    transform: translate3d(1.8%, -1%, 0) scale(1.03);
+    background-position: 52% 102%;
+    filter: hue-rotate(6deg) saturate(110%);
+  }
+}
+
+@keyframes vsm-landing-atmosphere-drift-b {
+  from {
+    transform: translate3d(1.8%, 1%, 0) scale(1);
+    background-position: 50% 114%, 84% 108%;
+    filter: hue-rotate(4deg) saturate(104%);
+  }
+  to {
+    transform: translate3d(-2%, -1.5%, 0) scale(1.03);
+    background-position: 54% 110%, 78% 104%;
+    filter: hue-rotate(-10deg) saturate(111%);
+  }
+}
+
+@keyframes vsm-landing-layer-a {
+  0% {
+    transform: translate3d(-2%, 3%, 0) scale(1);
+    opacity: 0.42;
+    filter: blur(44px) hue-rotate(-8deg);
+  }
+  50% {
+    transform: translate3d(2%, 1%, 0) scale(1.06);
+    opacity: 0.52;
+    filter: blur(46px) hue-rotate(4deg);
+  }
+  100% {
+    transform: translate3d(4%, -2%, 0) scale(1.1);
+    opacity: 0.46;
+    filter: blur(44px) hue-rotate(10deg);
+  }
+}
+
+@keyframes vsm-landing-layer-b {
+  0% {
+    transform: translate3d(2%, 2%, 0) scale(1.02);
+    opacity: 0.36;
+    filter: blur(52px) hue-rotate(10deg);
+  }
+  50% {
+    transform: translate3d(-2%, -1%, 0) scale(1.08);
+    opacity: 0.47;
+    filter: blur(54px) hue-rotate(-6deg);
+  }
+  100% {
+    transform: translate3d(-5%, -2%, 0) scale(1.12);
+    opacity: 0.41;
+    filter: blur(52px) hue-rotate(12deg);
+  }
+}
+
+@keyframes vsm-landing-layer-c {
+  0% {
+    background-position: 0% 35%;
+    opacity: 0.22;
+    filter: hue-rotate(-8deg) saturate(104%);
+  }
+  50% {
+    background-position: 56% 58%;
+    opacity: 0.35;
+    filter: hue-rotate(6deg) saturate(116%);
+  }
+  100% {
+    background-position: 100% 72%;
+    opacity: 0.27;
+    filter: hue-rotate(14deg) saturate(109%);
+  }
+}
+
+@keyframes vsm-docs-atmosphere-a {
+  0% {
+    transform: translate3d(-1%, 1%, 0) scale(1);
+    filter: hue-rotate(-3deg);
+  }
+  100% {
+    transform: translate3d(1.5%, -1%, 0) scale(1.03);
+    filter: hue-rotate(8deg);
+  }
+}
+
+@keyframes vsm-docs-atmosphere-b {
+  0% {
+    transform: translate3d(1%, 0.5%, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(-1%, -0.8%, 0) scale(1.02);
   }
 }
 

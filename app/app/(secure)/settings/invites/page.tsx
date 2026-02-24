@@ -35,6 +35,11 @@ export default async function InvitesSettingsPage() {
   const templateOptions = templates.map((t) => ({
     value: t.id,
     label: `${t.name} (${t.defaultRole?.name ?? "Role"})`,
+    defaultRoleName: t.defaultRole?.name ?? null,
+    expiresInMinutes: t.expiresInMinutes ?? null,
+    maxUses: t.maxUses ?? null,
+    require2fa: t.require2fa,
+    requireApproval: t.requireApproval,
   }));
 
   return (
